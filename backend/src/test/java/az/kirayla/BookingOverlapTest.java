@@ -30,8 +30,8 @@ class BookingOverlapTest extends IntegrationTestBase {
 
     @Test
     void overlappingRequestIsRejectedWith409() throws Exception {
-        Account a = register("A");
-        Account b = register("B");
+        Account a = register("Renter A");
+        Account b = register("Renter B");
         bookOk(a, listing, base, base.plusDays(3));
 
         book(b, listing, base.plusDays(2), base.plusDays(5))          // tail overlap
@@ -47,8 +47,8 @@ class BookingOverlapTest extends IntegrationTestBase {
 
     @Test
     void adjacentRangesAreAllowed() throws Exception {
-        Account a = register("A");
-        Account b = register("B");
+        Account a = register("Renter A");
+        Account b = register("Renter B");
         bookOk(a, listing, base, base.plusDays(2));
         bookOk(b, listing, base.plusDays(3), base.plusDays(4));       // starts the day after
         bookOk(b, listing, base.minusDays(2), base.minusDays(1));     // ends the day before
@@ -56,8 +56,8 @@ class BookingOverlapTest extends IntegrationTestBase {
 
     @Test
     void declinedOrCancelledBookingsFreeTheDates() throws Exception {
-        Account a = register("A");
-        Account b = register("B");
+        Account a = register("Renter A");
+        Account b = register("Renter B");
         long first = bookOk(a, listing, base, base.plusDays(1));
         mvc.perform(auth(post("/api/bookings/" + first + "/decline"), host)).andExpect(status().isOk());
         bookOk(b, listing, base, base.plusDays(1));
@@ -69,7 +69,7 @@ class BookingOverlapTest extends IntegrationTestBase {
                         .content(json.writeValueAsString(Map.of("from", base.toString(), "to", base.plusDays(2).toString(),
                                 "note", "Təmir"))))
                 .andExpect(status().isCreated());
-        Account a = register("A");
+        Account a = register("Renter A");
         book(a, listing, base.plusDays(2), base.plusDays(4))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("BOOKING_CONFLICT"));
@@ -78,7 +78,7 @@ class BookingOverlapTest extends IntegrationTestBase {
 
     @Test
     void blockOverAcceptedBookingIsRejected() throws Exception {
-        Account a = register("A");
+        Account a = register("Renter A");
         long id = bookOk(a, listing, base, base.plusDays(1));
         mvc.perform(auth(post("/api/bookings/" + id + "/accept"), host)).andExpect(status().isOk());
         mvc.perform(auth(post("/api/listings/" + listing + "/blocks"), host).contentType(MediaType.APPLICATION_JSON)
