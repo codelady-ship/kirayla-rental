@@ -1,0 +1,13 @@
+# Production (Render + Neon). DATABASE_URL (postgresql://...) is converted to JDBC by
+# DatabaseUrlEnvironmentPostProcessor; JWT_SECRET is required (the app refuses to start without it).
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 20000
+
+logging:
+  level:
+    root: INFO
