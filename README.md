@@ -1,7 +1,156 @@
 # Kirayla
 
-Kirayla is a peer-to-peer rental marketplace for Azerbaijan: anyone can list one of their own items (a camera, a drill, a tent, a bike) and rent it out by the day.
+Kirayla is a peer-to-peer rental marketplace for Azerbaijan. Anyone can list one of their own things (a camera, a drill, a tent, a bike, a console, a dress) and rent it out by the day. Renters search, pick dates and send a booking request; the owner accepts or declines.
 
-Live demo (GitHub Pages): https://codelady-ship.github.io/kirayla-rental/
+**Stack:** Next.js 16 (App Router, TypeScript, Tailwind CSS v4, next-intl az/en) on the front, Java 21 + Spring Boot 3.5 (Spring Security JWT, Data JPA, Flyway, PostgreSQL / H2) on the back.
 
-The full stack (React frontend, Express + MongoDB API) lands in the first feature PR.
+Azerbaijani is the default language; every page has an English switch.
+
+![Home — discovery](docs/screenshots/home-1440.png)
+
+## Portfolio notes
+
+| | |
+|---|---|
+| **What it shows** | A real two-sided marketplace: auth with refresh tokens, search with filters, availability calendar, a booking state machine guarded by a transactional overlap check, reviews, wishlist, messaging, host earnings and an admin panel. |
+| **Design** | Three deliberate zones. Discovery (home): floating rounded cards over a centred wordmark, one violet accent. Market (category → listing → checkout): a white, photo-first gallery where coral is reserved for actions. Dashboards (host + admin): a dark graphite UI with one cobalt action. The wordmark dot takes the accent of the zone you are in, and pages cross-fade between zones. Inspired by public style references; no third-party brand names, logos or assets are used. |
+| **Quality** | Responsive 320–1920 px, WCAG AA contrast, keyboard-operable calendar and dialogs, 44 px tap targets, JSON-LD (Organization, WebSite, Product/Offer), sitemap with hreflang, `robots.txt`, `llms.txt`. |
+| **Resilience** | The free API sleeps. If it does not answer within 8 s, the site shows a bundled snapshot of the seed with a "server is waking up" banner, then swaps in live data when the API is back. |
+
+### Architecture
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    UI["Next.js pages<br/>(discovery · market · dashboards)"]
+    Snap[("Demo snapshot<br/>cold-start fallback")]
+  end
+  subgraph Vercel
+    SSR["Next.js server<br/>ISR · metadata · JSON-LD · sitemap"]
+  end
+  subgraph Render["Render (Docker, Frankfurt)"]
+    API["Spring Boot API<br/>JWT · validation · OpenAPI"]
+    Store["StorageService<br/>(local disk → S3/Cloudinary)"]
+  end
+  DB[("Neon PostgreSQL<br/>Flyway V1 schema · V2 seed")]
+
+  UI -- "REST + Bearer JWT" --> API
+  SSR -- "public reads (8 s timeout)" --> API
+  UI -. "API asleep > 8 s" .-> Snap
+  API --> DB
+  API --> Store
+```
+
+### Booking rules
+
+- Rental days are inclusive: pick up on the 3rd, return on the 5th = 3 days. **Price = days × daily price**; the deposit is shown separately and refunded on return.
+- `REQUESTED → ACCEPTED | DECLINED`, `ACCEPTED → COMPLETED | CANCELLED`, `REQUESTED → CANCELLED`. Reviews unlock after `COMPLETED`.
+- **No double bookings.** Creating or accepting a booking runs in one transaction that first locks the listing row (`SELECT … FOR UPDATE`), then checks for overlapping `REQUESTED`/`ACCEPTED` bookings and host blocks. Accepting a request auto-declines overlapping requests. `BookingOverlapTest` races 4 threads for the same dates; exactly one wins.
+
+## Demo accounts
+
+All demo users share the password **`Demo1234!`**. The login page has one-click buttons for the three below.
+
+| Role | Email | What to try |
+|---|---|---|
+| Renter | `aysel@kirayla.az` | Book something, see *My rentals*, review the completed studio-lights rental, message a host |
+| Host | `rashad@kirayla.az` | Host dashboard: earnings chart, two pending requests to accept/decline, edit a listing, upload photos, block days |
+| Admin (read-only) | `demo-admin@kirayla.az` | Every admin screen is visible, but **every write is blocked**: the API answers `403 DEMO_READ_ONLY` and the UI shows a friendly toast |
+
+**Sandbox choice:** the public admin is **read-only** rather than reset nightly. It needs no cron job and visitors can never wreck moderation data. Renter and host demo data can change; redeploying with a fresh database restores the seed.
+
+A real admin is created at startup from `ADMIN_EMAIL` / `ADMIN_PASSWORD` (dev default: `admin@kirayla.local` / `admin-dev-only`; never used in production).
+
+## Run locally
+
+Requirements: JDK 21 and Node 20+. No database or Docker is needed; the dev profile uses in-memory H2 with the seed.
+
+```bash
+# 1) API on http://localhost:8080 (Swagger UI: /swagger-ui.html)
+cd backend
+./mvnw spring-boot:run
+
+# 2) Web on http://localhost:3000
+cd frontend
+cp .env.example .env.local     # NEXT_PUBLIC_API_URL=http://localhost:8080
+npm install
+npm run dev
+```
+
+### Tests
+
+```bash
+cd backend && ./mvnw -B verify          # JUnit 5 · MockMvc · @DataJpaTest (28 tests)
+cd frontend && npm run lint && npm run typecheck && npm test   # ESLint · tsc · Vitest
+cd frontend && npm run build && npm start & npx playwright test # end-to-end flows (API must be running)
+```
+
+GitHub Actions runs both pipelines (`.github/workflows/backend.yml`, `frontend.yml`). The frontend job also runs the Playwright flows against a real API.
+
+## API
+
+Base URL `/api`. JSON, ISO dates (`YYYY-MM-DD`). Errors look like `{"status":409,"code":"BOOKING_CONFLICT","message":"…"}`. Full schema: `/swagger-ui.html` and `/v3/api-docs`.
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| POST | `/auth/register` · `/auth/login` · `/auth/refresh` | – | Access token (15 min) + refresh token (14 days) |
+| GET | `/auth/me` · PUT `/users/me` | user | Current profile |
+| GET | `/users/{id}` | – | Public profile |
+| GET | `/categories` | – | Active categories with listing counts |
+| GET | `/listings?q&category&city&minPrice&maxPrice&from&to&sort&page&size` | – | Search: text, category, city, price range, free dates; sort `newest·price_asc·price_desc·rating`; paged |
+| GET | `/listings/{id}` | – | Detail with photos, host, reviews, unavailable ranges |
+| POST · PUT · DELETE | `/listings` · `/listings/{id}` | owner | Create, edit, archive |
+| POST · DELETE | `/listings/{id}/photos` · `/listings/{id}/photos/{photoId}` | owner | Multipart upload (JPEG/PNG/WebP, ≤ 5 MB, ≤ 8 photos) |
+| GET · POST · DELETE | `/listings/{id}/blocks[/{blockId}]` | owner | Calendar blocks |
+| POST | `/listings/{id}/reports` | user | Report a listing |
+| POST | `/bookings` | user | Request dates (409 on overlap) |
+| GET | `/bookings/mine` · `/bookings/incoming?status` · `/bookings/{id}` | user | Renter / host views |
+| POST | `/bookings/{id}/accept · decline · cancel · complete` | host / renter | Lifecycle |
+| POST | `/bookings/{id}/review` | renter | 1–5 stars after completion |
+| GET · PUT · DELETE | `/wishlist` · `/wishlist/ids` · `/wishlist/{listingId}` | user | Favourites |
+| GET · POST | `/conversations` · `/conversations/{id}/messages` · `/conversations/unread-count` | user | Renter ↔ host threads |
+| GET | `/host/listings` · `/host/earnings` | user | Host dashboard |
+| GET | `/admin/stats` | admin | KPIs, bookings by status, sign-ups |
+| GET · PATCH | `/admin/users` · `/admin/listings` · `/admin/bookings` · `/admin/reports` | admin | Moderation (block users, hide listings, resolve reports) |
+| GET · POST · PUT · DELETE | `/admin/categories` | admin | Category CRUD |
+| GET | `/uploads/**` · `/actuator/health` | – | Uploaded photos · health |
+
+## Deploy
+
+**API → Render (free web service, Frankfurt) + Neon Postgres**
+
+1. Create a Neon project (region `eu-central-1`) and copy its connection string.
+2. In Render, choose **New → Blueprint** and select this repo. `render.yaml` defines one Docker web service (`rootDir: backend`, health check `/actuator/health`) and no Render database.
+3. Set the environment variables marked `sync: false`:
+   - `DATABASE_URL` = the Neon string, e.g. `postgresql://USER:PASSWORD@ep-xxx.eu-central-1.aws.neon.tech/kirayla?sslmode=require`
+   - `CORS_ALLOWED_ORIGINS` = `https://<your-vercel-domain>` (comma-separated if several)
+   - `PUBLIC_BASE_URL` = `https://<your-render-service>.onrender.com`
+   - `ADMIN_EMAIL` / `ADMIN_PASSWORD` (optional, the real admin)
+   - `JWT_SECRET` is generated by Render.
+4. Flyway creates the schema and loads the seed on first boot.
+
+**Web → Vercel**
+
+1. Import the repo and set **Root Directory = `frontend`** (framework: Next.js).
+2. Environment variables: `NEXT_PUBLIC_API_URL=https://<your-render-service>.onrender.com`, `NEXT_PUBLIC_SITE_URL=https://<your-vercel-domain>`.
+3. Deploy. The site sends `Content-Security-Policy: frame-ancestors 'self' https://antiqa-portfolio.vercel.app https://antiqacode.vercel.app`, so the portfolio modal can embed it (admin panel included).
+
+Uploaded photos live on the container disk, which Render's free plan wipes on redeploy. Swap in an S3/Cloudinary implementation of `StorageService` for durable storage.
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Category](docs/screenshots/category-1440.png) | ![Listing](docs/screenshots/listing-1440.png) |
+| ![Checkout](docs/screenshots/booking-1440.png) | ![Host dashboard](docs/screenshots/host-1440.png) |
+| ![Admin](docs/screenshots/admin-1440.png) | ![Phone](docs/screenshots/home-390.png) |
+
+More sizes (1920 / 1440 / 768 / 390) are in [`docs/screenshots`](docs/screenshots).
+
+## Data & credits
+
+The seed (`backend/src/main/resources/db/migration/V2__seed_demo_data.sql`) and the frontend cold-start snapshot are both generated by `node scripts/seed/gen-seed.mjs`. It holds 12 users in Baku, Ganja and Sumgait, 10 categories, 40 listings, 104 photos, 114 bookings and 86 reviews.
+
+All photos come from **Wikimedia Commons** under CC0, public domain, CC BY or CC BY-SA. Each photo is hot-linked and credited to its author, with licence and source link, on the listing page (*Photo credits*).
+
+Kirayla is a portfolio project. Payments are not real.
