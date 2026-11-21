@@ -1,0 +1,14 @@
+# Zero-setup local profile: in-memory H2 in PostgreSQL mode, seeded by Flyway on every start.
+spring:
+  datasource:
+    url: jdbc:h2:mem:kirayla;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000
+    username: sa
+    password: ""
+
+kirayla:
+  jwt:
+    # obviously fake, local-only value; prod requires the JWT_SECRET env var
+    secret: ${JWT_SECRET:dev-only-not-a-secret-kirayla-local-0000}
+  admin:
+    email: ${ADMIN_EMAIL:admin@kirayla.local}
+    password: ${ADMIN_PASSWORD:admin-dev-only}

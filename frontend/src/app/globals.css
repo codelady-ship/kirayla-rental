@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+/*
+ * Kirayla runs on three deliberate "zones", each with ONE accent:
+ *  - discovery (home)      : canvas mist, pillow-soft 28px cards, violet #5433eb
+ *  - market (browse → book): white gallery, 12px photo cards, coral used only for actions
+ *  - dashboard (host/admin): onyx canvas, graphite cards, cobalt #5266eb
+ * The wordmark dot takes the accent of the zone you are in.
+ * AA notes: coral text-bearing buttons use the deeper #d90b3e (white text 4.9:1); muted greys darkened to ≥ 4.5:1.
+ */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* discovery */
+  --color-mist: #f2f4f5;
+  --color-ink: #000000;
+  --color-hair: #ebebeb;
+  --color-stone: #6b6866;
+  --color-violet: #5433eb;
+  --color-violet-deep: #4524db;
+  --color-violet-wash: #c0b5f3;
+  --color-slate-ink: #332f2d;
+
+  /* market */
+  --color-hof: #222222;
+  --color-foggy: #6a6a6a;
+  --color-faint: #f7f7f7;
+  --color-deco: #dddddd;
+  --color-coral: #ff385c;
+  --color-coral-deep: #d90b3e;
+
+  /* dashboard */
+  --color-onyx: #171721;
+  --color-graphite: #1e1e2a;
+  --color-obsidian: #272735;
+  --color-slate-line: #3a3a4a;
+  --color-ash: #c3c3cc;
+  --color-ivory: #ededf3;
+  --color-cobalt: #5266eb;
+  --color-cobalt-soft: #8b99f5;
+
+  --radius-pillow: 28px;
+  --radius-pillow-inner: 20px;
+  --radius-card: 12px;
+
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-float: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lift: 0 4px 24px rgba(0, 0, 0, 0.12);
+  --shadow-violet: 0 4px 24px rgba(69, 36, 219, 0.34);
+  --shadow-capsule: 0 0 0 1px rgba(0, 0, 0, 0.02), 0 2px 6px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-overlay: 0 8px 28px rgba(0, 0, 0, 0.28);
+
+  --animate-zone-in: zone-in 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-dash-in: dash-in 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-float: float 7s ease-in-out infinite;
+}
+
+@keyframes zone-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes dash-in {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+    filter: brightness(1.6);
+  }
+}
+/* the tilt lives on the card itself (rotate), so it survives reduced motion; the animation only bobs */
+@keyframes float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    background: var(--color-mist);
+    color: var(--color-ink);
+    overflow-x: clip;
+    transition: background-color 400ms ease;
+  }
+  /* the zone sets the page background so route changes cross-fade instead of flashing */
+  body:has([data-zone="market"]) {
+    background: #ffffff;
+  }
+  body:has([data-zone="dashboard"]) {
+    background: var(--color-onyx);
+    color-scheme: dark;
+  }
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  [data-zone="discovery"] :focus-visible {
+    outline-color: var(--color-violet);
+  }
+  [data-zone="market"] :focus-visible {
+    outline-color: var(--color-hof);
+  }
+  [data-zone="dashboard"] :focus-visible {
+    outline-color: var(--color-cobalt-soft);
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+  ::selection {
+    background: var(--color-violet-wash);
+  }
+}
+
+@layer components {
+  .tracking-tight-16 {
+    letter-spacing: -0.031em;
+  }
+  .tracking-tight-20 {
+    letter-spacing: -0.05em;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  /* dashboard tables: scroll inside, never the page */
+  .dash-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-color: var(--color-slate-line) transparent;
+  }
+  .dash-input {
+    width: 100%;
+    min-height: 44px;
+    border-radius: 32px;
+    border: 1px solid var(--color-slate-line);
+    background: var(--color-onyx);
+    color: var(--color-ivory);
+    padding: 0 18px;
+    font-size: 15px;
+  }
+  .dash-input:focus {
+    border-color: var(--color-cobalt-soft);
+    outline: none;
+  }
+  textarea.dash-input {
+    border-radius: 18px;
+    padding: 12px 18px;
+    min-height: 120px;
+  }
+  select.dash-input {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--color-ash) 50%),
+      linear-gradient(135deg, var(--color-ash) 50%, transparent 50%);
+    background-position: calc(100% - 22px) 50%, calc(100% - 17px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 40px;
+  }
+  .market-input {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 8px;
+    border: 1px solid #b0b0b0;
+    background: #fff;
+    color: var(--color-hof);
+    padding: 0 14px;
+    font-size: 16px;
+  }
+  .market-input:focus {
+    border-color: var(--color-hof);
+    box-shadow: 0 0 0 1px var(--color-hof);
+    outline: none;
+  }
+  textarea.market-input {
+    padding: 12px 14px;
+    min-height: 110px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}
