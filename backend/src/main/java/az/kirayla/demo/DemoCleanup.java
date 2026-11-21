@@ -1,8 +1,5 @@
 package az.kirayla.demo;
 
-import az.kirayla.domain.Listing;
-import az.kirayla.repo.ListingRepository;
-import az.kirayla.repo.ReviewRepository;
 import az.kirayla.storage.StorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +7,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -20,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -34,6 +33,11 @@ import java.util.Set;
  *   <li>expired refresh tokens.</li>
  * </ul>
  * Listings that registered visitors create on their own accounts are not touched.
+ *
+ * <p>A run is one transaction, opened here with a {@link TransactionTemplate} rather than with
+ * {@code @Transactional}: the scheduler calls {@link #scheduled()} on this object directly, where an
+ * annotation on a method of the same class would be bypassed. Either every step of a run is applied,
+ * including the recalculated ratings, or none is.
  */
 @Component
 public class DemoCleanup {
@@ -42,15 +46,13 @@ public class DemoCleanup {
     private static final String PROTECTED = "(SELECT u.id FROM users u WHERE u.demo_protected = TRUE)";
 
     private final NamedParameterJdbcTemplate jdbc;
-    private final ListingRepository listings;
-    private final ReviewRepository reviews;
+    private final TransactionTemplate tx;
     private final StorageService storage;
 
-    public DemoCleanup(NamedParameterJdbcTemplate jdbc, ListingRepository listings, ReviewRepository reviews,
+    public DemoCleanup(NamedParameterJdbcTemplate jdbc, PlatformTransactionManager transactions,
                        StorageService storage) {
         this.jdbc = jdbc;
-        this.listings = listings;
-        this.reviews = reviews;
+        this.tx = new TransactionTemplate(transactions);
         this.storage = storage;
     }
 
@@ -66,8 +68,21 @@ public class DemoCleanup {
     }
 
     /** Removes visitor-made demo data created before {@code cutoff}; returns the number of rows touched. */
-    @Transactional
     public int cleanup(LocalDateTime cutoff) {
+        List<String> files = new ArrayList<>();
+        Integer n = tx.execute(status -> run(cutoff, files));
+        // uploaded files go only after the rows are committed; a failure here must not undo the run
+        for (String key : files) {
+            try {
+                storage.delete(key);
+            } catch (RuntimeException e) {
+                log.warn("Demo cleanup could not delete file {}: {}", key, e.getMessage());
+            }
+        }
+        return n == null ? 0 : n;
+    }
+
+    private int run(LocalDateTime cutoff, List<String> files) {
         MapSqlParameterSource p = new MapSqlParameterSource()
                 .addValue("seed", SeedData.FIRST_VISITOR_ID)
                 .addValue("cutoff", Timestamp.valueOf(cutoff))
@@ -121,7 +136,7 @@ public class DemoCleanup {
                 """, p);
 
         // 5. the listings themselves (photos, blocks and wishlist rows cascade) and their uploaded files
-        List<String> files = new ArrayList<>(jdbc.queryForList("""
+        files.addAll(jdbc.queryForList("""
                 SELECT ph.storage_key FROM listing_photos ph
                 WHERE ph.listing_id IN (:listings) AND ph.storage_key IS NOT NULL
                 """, p, String.class));
@@ -139,16 +154,17 @@ public class DemoCleanup {
 
         n += jdbc.update("DELETE FROM refresh_tokens WHERE expires_at < :now", p);
 
-        // ratings of listings that lost reviews
+        // rating and review count of every surviving listing that lost reviews, from the reviews that are left
         rated.removeAll(doomedListings);
         for (Long id : rated) {
-            Listing l = listings.findById(id).orElse(null);
-            if (l == null) continue;
-            Double avg = reviews.averageForListing(id);
-            l.setRatingAvg(BigDecimal.valueOf(avg == null ? 0 : avg).setScale(2, RoundingMode.HALF_UP));
-            l.setReviewCount((int) reviews.countByListingId(id));
+            MapSqlParameterSource one = new MapSqlParameterSource("id", id);
+            Map<String, Object> left = jdbc.queryForMap(
+                    "SELECT COUNT(*) AS cnt, AVG(CAST(rating AS DOUBLE PRECISION)) AS average FROM reviews WHERE listing_id = :id", one);
+            Number avg = (Number) left.get("average");
+            one.addValue("avg", BigDecimal.valueOf(avg == null ? 0 : avg.doubleValue()).setScale(2, RoundingMode.HALF_UP))
+                    .addValue("cnt", ((Number) left.get("cnt")).intValue());
+            jdbc.update("UPDATE listings SET rating_avg = :avg, review_count = :cnt WHERE id = :id", one);
         }
-        files.forEach(storage::delete);
         return n;
     }
 }

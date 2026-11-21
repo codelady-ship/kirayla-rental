@@ -7,6 +7,10 @@ package az.kirayla.demo;
 public final class SeedData {
     public static final long FIRST_VISITOR_ID = 10_000L;
 
+    /** The three demo accounts whose password is printed on the login page. */
+    public static final java.util.Set<String> PUBLIC_LOGINS =
+            java.util.Set.of("aysel@kirayla.az", "rashad@kirayla.az", "demo-admin@kirayla.az");
+
     private SeedData() {}
 
     public static boolean isSeed(Long id) {

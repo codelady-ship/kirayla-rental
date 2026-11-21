@@ -2,10 +2,19 @@ package az.kirayla;
 
 import az.kirayla.demo.DemoCleanup;
 import az.kirayla.domain.Role;
+import az.kirayla.storage.StorageService;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.sql.DataSource;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -27,7 +36,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 class DemoProtectionTest extends IntegrationTestBase {
     private static final String DEMO_PASSWORD = "Demo1234!";
+    private static final List<String> SEED_LOGINS = List.of("aysel@kirayla.az", "rashad@kirayla.az", "demo-admin@kirayla.az");
     @Autowired DemoCleanup cleanup;
+    @Autowired JdbcTemplate sql;
+    @Autowired DataSource dataSource;
+    @Autowired PlatformTransactionManager transactions;
+    @Autowired StorageService storage;
 
     private Account demo(String email) throws Exception {
         JsonNode body = read(mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
@@ -233,6 +247,66 @@ class DemoProtectionTest extends IntegrationTestBase {
                 org.hamcrest.Matchers.greaterThanOrEqualTo(40)));
     }
 
+    /**
+     * The path the scheduler really takes: {@code scheduled()} called on the bean, rows aged in the database.
+     * A visitor's 1-star review through the demo renter must leave no trace on the seeded listing's rating,
+     * and a run that fails part-way must change nothing at all.
+     */
+    @Test
+    void scheduledRunRestoresSeededRatingsAndIsAtomic() throws Exception {
+        Account renter = demo("aysel@kirayla.az");
+        Map<String, Object> target = sql.queryForList("""
+                SELECT b.id AS booking, b.listing_id AS listing FROM bookings b JOIN listings l ON l.id = b.listing_id
+                WHERE b.renter_id = ? AND b.status = 'COMPLETED' AND b.id < 10000 AND l.id < 10000 AND l.review_count > 0
+                  AND NOT EXISTS (SELECT 1 FROM reviews r WHERE r.booking_id = b.id)
+                ORDER BY b.id
+                """, renter.id()).get(0);
+        long booking = ((Number) target.get("booking")).longValue();
+        long listing = ((Number) target.get("listing")).longValue();
+        BigDecimal seededRating = sql.queryForObject("SELECT rating_avg FROM listings WHERE id = ?", BigDecimal.class, listing);
+        int seededCount = sql.queryForObject("SELECT review_count FROM listings WHERE id = ?", Integer.class, listing);
+        assertThat(sql.queryForObject("SELECT COUNT(*) FROM reviews WHERE listing_id = ?", Integer.class, listing))
+                .as("seeded count matches the seeded reviews").isEqualTo(seededCount);
+
+        mvc.perform(auth(post("/api/bookings/" + booking + "/review"), renter).contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("rating", 1, "comment", "Bir ulduz, sadəcə sınaq üçün."))))
+                .andExpect(status().is2xxSuccessful());
+        BigDecimal skewed = sql.queryForObject("SELECT rating_avg FROM listings WHERE id = ?", BigDecimal.class, listing);
+        assertThat(skewed).isLessThan(seededRating);
+        mvc.perform(get("/api/listings/" + listing)).andExpect(jsonPath("$.reviewCount").value(seededCount + 1));
+
+        // fresh rows survive a scheduled run
+        cleanup.scheduled();
+        assertThat(sql.queryForObject("SELECT COUNT(*) FROM reviews WHERE booking_id = ?", Integer.class, booking)).isEqualTo(1);
+
+        // two days later…
+        sql.update("UPDATE reviews SET created_at = ? WHERE booking_id = ?",
+                Timestamp.valueOf(LocalDateTime.now().minusDays(2)), booking);
+
+        // …a run that breaks at its last statement rolls back completely: review, rating and count are as before it
+        DemoCleanup failing = new DemoCleanup(new NamedParameterJdbcTemplate(dataSource) {
+            @Override
+            public int update(String statement, SqlParameterSource params) {
+                if (statement.contains("refresh_tokens")) throw new IllegalStateException("simulated failure mid-run");
+                return super.update(statement, params);
+            }
+        }, transactions, storage);
+        failing.scheduled();
+        assertThat(sql.queryForObject("SELECT COUNT(*) FROM reviews WHERE booking_id = ?", Integer.class, booking))
+                .as("the delete was rolled back").isEqualTo(1);
+        assertThat(sql.queryForObject("SELECT review_count FROM listings WHERE id = ?", Integer.class, listing)).isEqualTo(seededCount + 1);
+        assertThat(sql.queryForObject("SELECT rating_avg FROM listings WHERE id = ?", BigDecimal.class, listing)).isEqualByComparingTo(skewed);
+
+        // …and the real scheduled run removes the review and puts rating and count back to the seeded values
+        cleanup.scheduled();
+        assertThat(sql.queryForObject("SELECT COUNT(*) FROM reviews WHERE booking_id = ?", Integer.class, booking)).isZero();
+        assertThat(sql.queryForObject("SELECT rating_avg FROM listings WHERE id = ?", BigDecimal.class, listing)).isEqualByComparingTo(seededRating);
+        assertThat(sql.queryForObject("SELECT review_count FROM listings WHERE id = ?", Integer.class, listing)).isEqualTo(seededCount);
+        mvc.perform(get("/api/listings/" + listing))
+                .andExpect(jsonPath("$.reviewCount").value(seededCount))
+                .andExpect(jsonPath("$.ratingAvg").value(seededRating.doubleValue()));
+    }
+
     // ---------------------------------------------------------------- tokens, rate limit, races
 
     @Test
@@ -289,6 +363,35 @@ class DemoProtectionTest extends IntegrationTestBase {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(Map.of("email", victim.email(), "password", "Secret123!"))))
                 .andExpect(status().isOk());
+    }
+
+    private int loginFrom(String address, String email, String password) throws Exception {
+        return mvc.perform(post("/api/auth/login").with(r -> { r.setRemoteAddr(address); return r; })
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json.writeValueAsString(Map.of("email", email, "password", password))))
+                .andReturn().getResponse().getStatus();
+    }
+
+    @Test
+    void publicDemoAccountsAreNotLockedPerEmailButStillPerAddress() throws Exception {
+        String shared = "198.51.100.40";   // e.g. a proxy hop many visitors arrive through
+        // one visitor's wrong passwords do not lock a demo account for the others behind the same address
+        for (int i = 0; i < 12; i++) {
+            assertThat(loginFrom(shared, i % 2 == 0 ? "demo-admin@kirayla.az" : "Demo-Admin@Kirayla.AZ", "wrong-" + i)).isEqualTo(401);
+        }
+        for (String email : SEED_LOGINS) assertThat(loginFrom(shared, email, DEMO_PASSWORD)).as(email).isEqualTo(200);
+
+        // every other account keeps the per-(address, e-mail) lock
+        Account victim = register("Locked");
+        for (int i = 0; i < 8; i++) assertThat(loginFrom(shared, victim.email(), "nope")).isEqualTo(401);
+        assertThat(loginFrom(shared, victim.email(), "Secret123!")).isEqualTo(429);
+        assertThat(loginFrom(shared, "demo-admin@kirayla.az", DEMO_PASSWORD)).isEqualTo(200);
+
+        // the per-address limit (40 failures) still applies to the demo accounts: 20 so far, 20 more
+        for (int i = 0; i < 20; i++) assertThat(loginFrom(shared, SEED_LOGINS.get(i % 3), "wrong")).as("failure " + (21 + i)).isEqualTo(401);
+        for (String email : SEED_LOGINS) assertThat(loginFrom(shared, email, DEMO_PASSWORD)).as(email).isEqualTo(429);
+        // another address is unaffected
+        assertThat(loginFrom("198.51.100.41", "demo-admin@kirayla.az", DEMO_PASSWORD)).isEqualTo(200);
     }
 
     @Test

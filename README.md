@@ -66,9 +66,9 @@ Three accounts are public logins, so everything they can do or read is public. N
 | **Demo admin** | Read-only: every write is refused with `403 DEMO_READ_ONLY`. It also never sees visitors' personal data: one response filter (`DemoAdminRedaction`) rewrites **every** JSON response for this account. E-mails are masked (`a***@domain`), private text (booking notes, messages, report reasons) is shown only for seed rows, and any text field that is not on an explicit allow-list is nulled, so a field added later is hidden by default. User search does not match on e-mail for this account. |
 | **Demo renter, demo host** | `DemoGuard`: through these accounts the seeded listings (and their photos and calendar blocks) cannot be edited, archived or deleted, and the accounts' own profiles cannot be edited (`403 DEMO_PROTECTED`, shown as a friendly toast). Visitors can still create their own listings and bookings with them and edit those freely, and can accept / decline / cancel the seeded requests. |
 
-**Cleanup instead of a full reset.** A scheduled job (`DemoCleanup`, hourly) removes what visitors left on the shared demo data once it is older than 24 hours: listings created with the demo accounts, bookings / reviews / conversations / calendar blocks that anyone put on seeded listings (most seed hosts cannot log in, so such requests would otherwise hold dates for ever), bookings and reports made with the demo accounts, and new messages in seeded conversations. Seeded bookings return to their original status. Listings that registered visitors create on their own accounts are never touched. Wishlist hearts are not reset.
+**Cleanup instead of a full reset.** A scheduled job (`DemoCleanup`, hourly) removes what visitors left on the shared demo data once it is older than 24 hours: listings created with the demo accounts, bookings / reviews / conversations / calendar blocks that anyone put on seeded listings (most seed hosts cannot log in, so such requests would otherwise hold dates for ever), bookings and reports made with the demo accounts, and new messages in seeded conversations. Seeded bookings return to their original status, and the rating and review count of every listing that lost reviews are recalculated. Each run is a single transaction. Listings that registered visitors create on their own accounts are never touched. Wishlist hearts are not reset.
 
-Sign-in is rate-limited (8 failed attempts per address and e-mail, 40 per address, in 10 minutes → `429`), refresh tokens rotate on every use and `POST /api/auth/logout` revokes them.
+Sign-in is rate-limited (8 failed attempts per address and e-mail, 40 per address, in 10 minutes → `429`; the three public demo accounts are exempt from the per-e-mail lock, since their password is public, but not from the per-address one), refresh tokens rotate on every use and `POST /api/auth/logout` revokes them.
 
 A real admin is created at startup from `ADMIN_EMAIL` / `ADMIN_PASSWORD` (dev default: `admin@kirayla.local` / `admin-dev-only`; never used in production).
 
@@ -91,7 +91,7 @@ npm run dev
 ### Tests
 
 ```bash
-cd backend && ./mvnw -B verify          # JUnit 5 · MockMvc · @DataJpaTest (36 tests)
+cd backend && ./mvnw -B verify          # JUnit 5 · MockMvc · @DataJpaTest (38 tests)
 cd frontend && npm run lint && npm run typecheck && npm test   # ESLint · tsc · Vitest (12 tests)
 
 # end-to-end flows: API on :8080, then a production build of the web app on :3000

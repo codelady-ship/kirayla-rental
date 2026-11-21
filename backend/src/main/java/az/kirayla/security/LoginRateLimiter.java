@@ -1,6 +1,7 @@
 package az.kirayla.security;
 
 import az.kirayla.common.ApiException;
+import az.kirayla.demo.SeedData;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * Slows down password guessing: failed logins are counted in a sliding window per (client address, e-mail)
  * and per client address. Over the limit the API answers 429 until old failures leave the window.
  * A successful login clears the pair's counter.
+ *
+ * <p>The three public demo accounts are left out of the per-(address, e-mail) lock: their password is public,
+ * so the lock protects nothing, and behind a shared proxy hop one visitor's wrong passwords would otherwise
+ * lock the demo buttons for everyone else. They still count towards, and obey, the per-address limit.
  *
  * <p>In memory on purpose (one small instance, no extra infrastructure). The address is
  * {@code HttpServletRequest#getRemoteAddr()}; behind Render's proxy Tomcat's RemoteIpValve
@@ -43,7 +48,7 @@ public class LoginRateLimiter {
     /** Throws 429 when this address (or this address for this e-mail) has failed too often recently. */
     public void check(String address, String email) {
         long now = System.currentTimeMillis();
-        if (count(pair(address, email), now) >= maxPerPair || count(address, now) >= maxPerAddress) {
+        if ((!isPublicDemo(email) && count(pair(address, email), now) >= maxPerPair) || count(address, now) >= maxPerAddress) {
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, CODE,
                     "Too many failed sign-in attempts. Wait a few minutes and try again.");
         }
@@ -52,7 +57,7 @@ public class LoginRateLimiter {
     public void failed(String address, String email) {
         long now = System.currentTimeMillis();
         if (failures.size() > MAX_KEYS) prune(now);
-        add(pair(address, email), now);
+        if (!isPublicDemo(email)) add(pair(address, email), now);
         add(address, now);
     }
 
@@ -60,8 +65,16 @@ public class LoginRateLimiter {
         failures.remove(pair(address, email));
     }
 
+    private static String normal(String email) {
+        return email == null ? "" : email.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private static boolean isPublicDemo(String email) {
+        return SeedData.PUBLIC_LOGINS.contains(normal(email));
+    }
+
     private static String pair(String address, String email) {
-        return address + "|" + (email == null ? "" : email.trim().toLowerCase(Locale.ROOT));
+        return address + "|" + normal(email);
     }
 
     private void add(String key, long now) {
