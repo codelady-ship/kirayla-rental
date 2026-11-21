@@ -485,7 +485,7 @@ export function AdminReports() {
                   <Link href={`/listing/${r.listing.id}`} className="mt-1 block truncate py-2.5 text-[16px] font-[480] hover:underline">
                     {r.listing.title}
                   </Link>
-                  <p className="mt-1 text-[15px]">“{r.reason}”</p>
+                  <p className={`mt-1 text-[15px] ${r.reason ? "" : "text-ash"}`}>{r.reason ? `“${r.reason}”` : t("hiddenInDemo")}</p>
                   <p className="mt-2 text-[13px] text-ash">
                     {t("reporter")}: {r.reporter.name} · {t("status")}: {t(`status_${r.listing.status}`)}
                   </p>

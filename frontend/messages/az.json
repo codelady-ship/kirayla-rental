@@ -37,7 +37,8 @@
     "photoCredit": "Foto",
     "langSwitch": "English",
     "langLabel": "Dili dəyiş",
-    "empty": "Hələ heç nə yoxdur."
+    "empty": "Hələ heç nə yoxdur.",
+    "demoProtected": "Bu, ortaq demo məlumatıdır və dəyişdirilə bilməz. Sınamaq üçün öz elanını yarat — onu istədiyin kimi redaktə edə bilərsən."
   },
   "Nav": {
     "explore": "Kəşf et",
@@ -251,7 +252,8 @@
     "demoRenter": "Kirayəçi — Aysel",
     "demoHost": "Ev sahibi — Rəşad",
     "demoAdmin": "Admin (yalnız oxuma)",
-    "welcome": "Xoş gəldin, {name}!"
+    "welcome": "Xoş gəldin, {name}!",
+    "tooMany": "Çox sayda uğursuz cəhd oldu. Bir neçə dəqiqə gözlə və yenidən yoxla."
   },
   "Dash": {
     "host": "Ev sahibi",
@@ -376,7 +378,8 @@
     "tableScroll": "Cədvəli üfüqi sürüşdür",
     "chartTable": "Diaqramın məlumatları",
     "month": "Ay",
-    "forbidden": "Bu bölməyə giriş yalnız adminlər üçündür."
+    "forbidden": "Bu bölməyə giriş yalnız adminlər üçündür.",
+    "hiddenInDemo": "Demo admin üçün gizlədilib"
   },
   "Footer": {
     "about": "<brand>Kirayla</brand> — Azərbaycanda insanların bir-birinə əşya kirayə verdiyi açıq bazar. Portfolio layihəsidir: ödənişlər real deyil.",

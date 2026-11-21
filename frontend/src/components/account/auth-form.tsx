@@ -56,6 +56,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       else if (err instanceof ApiError && err.code === "EMAIL_TAKEN") setError(t("emailTaken"));
       else if (err instanceof ApiError && err.fieldErrors) setFieldErrors(err.fieldErrors);
       else if (err instanceof ApiError && err.status === 0) setError(tc("network"));
+      else if (err instanceof ApiError && err.status === 429) setError(t("tooMany"));
       else onError(err);
     } finally {
       setBusy(null);
@@ -70,6 +71,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       done(u.name, u.role, key);
     } catch (err) {
       if (err instanceof ApiError && err.status === 0) setError(tc("network"));
+      else if (err instanceof ApiError && err.status === 429) setError(t("tooMany"));
       else onError(err);
     } finally {
       setBusy(null);

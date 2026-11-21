@@ -45,6 +45,7 @@ export function useApiErrorToast() {
     (e: unknown) => {
       if (e instanceof ApiError) {
         if (e.code === "DEMO_READ_ONLY") return toast(t("demoReadOnly"), "error");
+        if (e.code === "DEMO_PROTECTED") return toast(t("demoProtected"), "error");
         if (e.status === 0) return toast(t("network"), "error");
         return toast(e.message || t("error"), "error");
       }
@@ -108,6 +109,9 @@ function AuthProvider({ children }: { children: ReactNode }) {
       login: async (email, password) => accept(await api<AuthResponse>("/api/auth/login", { method: "POST", body: { email, password }, auth: false })),
       register: async (input) => accept(await api<AuthResponse>("/api/auth/register", { method: "POST", body: input, auth: false })),
       logout: () => {
+        // revoke the refresh token on the server (best effort), then forget both tokens locally
+        const refreshToken = readTokens()?.refreshToken;
+        if (refreshToken && API_CONFIGURED) void api("/api/auth/logout", { method: "POST", body: { refreshToken }, auth: false }).catch(() => {});
         writeTokens(null);
         setUser(null);
       },

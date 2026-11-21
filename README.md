@@ -6,7 +6,7 @@ Kirayla is a peer-to-peer rental marketplace for Azerbaijan. Anyone can list one
 
 Azerbaijani is the default language; every page has an English switch.
 
-![Home — discovery](docs/screenshots/home-1440.png)
+![Home — discovery](docs/screenshots/home-1440.webp)
 
 ## Portfolio notes
 
@@ -49,15 +49,26 @@ flowchart LR
 
 ## Demo accounts
 
-All demo users share the password **`Demo1234!`**. The login page has one-click buttons for the three below.
+The three demo accounts below share the password **`Demo1234!`**; no other seed user can sign in. The login page has one-click buttons for the three below.
 
 | Role | Email | What to try |
 |---|---|---|
 | Renter | `aysel@kirayla.az` | Book something, see *My rentals*, review the completed studio-lights rental, message a host |
-| Host | `rashad@kirayla.az` | Host dashboard: earnings chart, two pending requests to accept/decline, edit a listing, upload photos, block days |
+| Host | `rashad@kirayla.az` | Host dashboard: earnings chart, two pending requests to accept/decline, create a listing of your own with photos and edit it, block days |
 | Admin (read-only) | `demo-admin@kirayla.az` | Every admin screen is visible, but **every write is blocked**: the API answers `403 DEMO_READ_ONLY` and the UI shows a friendly toast |
 
-**Sandbox choice:** the public admin is **read-only** rather than reset nightly. It needs no cron job and visitors can never wreck moderation data. Renter and host demo data can change; redeploying with a fresh database restores the seed.
+### How the public demo protects itself
+
+Three accounts are public logins, so everything they can do or read is public. Nobody else in the seed can sign in: the other seed users have a placeholder instead of a password hash.
+
+| Account | What is locked down (server-side) |
+|---|---|
+| **Demo admin** | Read-only: every write is refused with `403 DEMO_READ_ONLY`. It also never sees visitors' personal data: one response filter (`DemoAdminRedaction`) rewrites **every** JSON response for this account. E-mails are masked (`a***@domain`), private text (booking notes, messages, report reasons) is shown only for seed rows, and any text field that is not on an explicit allow-list is nulled, so a field added later is hidden by default. User search does not match on e-mail for this account. |
+| **Demo renter, demo host** | `DemoGuard`: through these accounts the seeded listings (and their photos and calendar blocks) cannot be edited, archived or deleted, and the accounts' own profiles cannot be edited (`403 DEMO_PROTECTED`, shown as a friendly toast). Visitors can still create their own listings and bookings with them and edit those freely, and can accept / decline / cancel the seeded requests. |
+
+**Cleanup instead of a full reset.** A scheduled job (`DemoCleanup`, hourly) removes what visitors left on the shared demo data once it is older than 24 hours: listings created with the demo accounts, bookings / reviews / conversations / calendar blocks that anyone put on seeded listings (most seed hosts cannot log in, so such requests would otherwise hold dates for ever), bookings and reports made with the demo accounts, and new messages in seeded conversations. Seeded bookings return to their original status. Listings that registered visitors create on their own accounts are never touched. Wishlist hearts are not reset.
+
+Sign-in is rate-limited (8 failed attempts per address and e-mail, 40 per address, in 10 minutes → `429`), refresh tokens rotate on every use and `POST /api/auth/logout` revokes them.
 
 A real admin is created at startup from `ADMIN_EMAIL` / `ADMIN_PASSWORD` (dev default: `admin@kirayla.local` / `admin-dev-only`; never used in production).
 
@@ -80,7 +91,7 @@ npm run dev
 ### Tests
 
 ```bash
-cd backend && ./mvnw -B verify          # JUnit 5 · MockMvc · @DataJpaTest (28 tests)
+cd backend && ./mvnw -B verify          # JUnit 5 · MockMvc · @DataJpaTest (36 tests)
 cd frontend && npm run lint && npm run typecheck && npm test   # ESLint · tsc · Vitest (12 tests)
 
 # end-to-end flows: API on :8080, then a production build of the web app on :3000
@@ -100,7 +111,7 @@ Base URL `/api`. JSON, ISO dates (`YYYY-MM-DD`). Errors look like `{"status":409
 
 | Method | Path | Auth | Purpose |
 |---|---|---|---|
-| POST | `/auth/register` · `/auth/login` · `/auth/refresh` | – | Access token (15 min) + refresh token (14 days) |
+| POST | `/auth/register` · `/auth/login` · `/auth/refresh` · `/auth/logout` | – | Access token (15 min) + single-use refresh token (14 days); logout revokes it; login is rate-limited |
 | GET | `/auth/me` · PUT `/users/me` | user | Current profile |
 | GET | `/users/{id}` | – | Public profile |
 | GET | `/categories` | – | Active categories with listing counts |
@@ -159,15 +170,15 @@ Notes: the free Render service sleeps after 15 minutes; the first request then t
 
 | | |
 |---|---|
-| ![Category](docs/screenshots/category-1440.png) | ![Listing](docs/screenshots/listing-1440.png) |
-| ![Checkout](docs/screenshots/booking-1440.png) | ![Host dashboard](docs/screenshots/host-1440.png) |
-| ![Admin](docs/screenshots/admin-1440.png) | ![Phone](docs/screenshots/home-390.png) |
+| ![Category](docs/screenshots/category-1440.webp) | ![Listing](docs/screenshots/listing-1440.webp) |
+| ![Checkout](docs/screenshots/booking-1440.webp) | ![Host dashboard](docs/screenshots/host-1440.webp) |
+| ![Admin](docs/screenshots/admin-1440.webp) | ![Phone](docs/screenshots/home-390.webp) |
 
-More sizes (1920 / 1440 / 768 / 390) are in [`docs/screenshots`](docs/screenshots); the English versions are in [`docs/screenshots/en`](docs/screenshots/en).
+WebP, at most 1280 px wide (`scripts/screenshots.mjs` converts with ffmpeg). More sizes (1920 / 1440 / 768 / 390) are in [`docs/screenshots`](docs/screenshots); the English versions are in [`docs/screenshots/en`](docs/screenshots/en).
 
 ## Data & credits
 
-The seed (`backend/src/main/resources/db/migration/V2__seed_demo_data.sql`) and the frontend cold-start snapshot are both generated by `node scripts/seed/gen-seed.mjs`. It holds 12 users in Baku, Ganja and Sumgait, 10 categories, 40 listings, 104 photos, 114 bookings and 86 reviews.
+The seed (`backend/src/main/resources/db/migration/V2__seed_demo_data.sql`) and the frontend cold-start snapshot are both generated by `node scripts/seed/gen-seed.mjs`. It holds 22 users in Baku, Ganja and Sumgait, 10 categories, 40 listings, 104 photos, 114 bookings and 86 reviews.
 
 All photos come from **Wikimedia Commons** under CC0, public domain, CC BY or CC BY-SA. Each photo is hot-linked and credited to its author, with licence and source link, on the listing page (*Photo credits*).
 

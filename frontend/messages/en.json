@@ -37,7 +37,8 @@
     "photoCredit": "Photo",
     "langSwitch": "Azərbaycanca",
     "langLabel": "Change language",
-    "empty": "Nothing here yet."
+    "empty": "Nothing here yet.",
+    "demoProtected": "This is shared demo data and cannot be changed. Create your own listing to try it — that one is yours to edit."
   },
   "Nav": {
     "explore": "Explore",
@@ -251,7 +252,8 @@
     "demoRenter": "Renter — Aysel",
     "demoHost": "Host — Rashad",
     "demoAdmin": "Admin (read-only)",
-    "welcome": "Welcome, {name}!"
+    "welcome": "Welcome, {name}!",
+    "tooMany": "Too many failed attempts. Wait a few minutes and try again."
   },
   "Dash": {
     "host": "Host",
@@ -376,7 +378,8 @@
     "tableScroll": "Scroll the table horizontally",
     "chartTable": "Chart data",
     "month": "Month",
-    "forbidden": "This section is for admins only."
+    "forbidden": "This section is for admins only.",
+    "hiddenInDemo": "Hidden from the demo admin"
   },
   "Footer": {
     "about": "<brand>Kirayla</brand> is an open marketplace where people in Azerbaijan rent things to each other. A portfolio project: no real payments.",

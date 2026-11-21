@@ -116,12 +116,12 @@ function Filters({ params, categories, fixedCategory, onApply, idPrefix }: { par
       <div className="flex items-center justify-between gap-3 border-t border-hair pt-5">
         <button
           type="button"
-          className="min-h-11 rounded-lg px-2 text-[15px] font-medium underline underline-offset-2"
+          className="min-h-11 shrink-0 rounded-lg px-1 text-[15px] font-medium underline underline-offset-2"
           onClick={() => onApply({ category: fixedCategory, page: 0, sort: params.sort })}
         >
           {t("clear")}
         </button>
-        <button type="submit" className="min-h-12 whitespace-nowrap rounded-lg bg-hof px-5 text-[15px] font-medium text-white">
+        <button type="submit" className="min-h-12 min-w-0 flex-1 truncate rounded-lg bg-hof px-3 text-[15px] font-medium text-white">
           {t("showResults")}
         </button>
       </div>

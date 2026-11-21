@@ -80,7 +80,7 @@ function RequestRow({ b, onAction, busy }: { b: Booking; onAction: (b: Booking, 
         </div>
       </div>
       <div className="min-w-0 text-[14px]">
-        <Link href={`/listing/${b.listing.id}`} className="block truncate py-1.5 text-ivory hover:underline">
+        <Link href={`/listing/${b.listing.id}`} className="block truncate py-3 text-ivory hover:underline">
           {b.listing.title}
         </Link>
         <p className="num truncate text-ash">

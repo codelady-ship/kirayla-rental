@@ -59,7 +59,7 @@ public class DemoCleanup {
     public void scheduled() {
         try {
             int removed = cleanup(LocalDateTime.now().minus(MAX_AGE));
-            if (removed > 0) log.info("Demo cleanup removed or restored {} rows", removed);
+            log.info("Demo cleanup ran: {} rows removed or restored", removed);
         } catch (RuntimeException e) {
             log.warn("Demo cleanup failed: {}", e.getMessage());
         }

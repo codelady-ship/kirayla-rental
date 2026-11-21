@@ -59,6 +59,7 @@ jobs:
             -e JWT_SECRET='ci-only-not-a-real-secret-0123456789' \
             -e CORS_ALLOWED_ORIGINS='https://example.test' \
             -e PUBLIC_BASE_URL='http://localhost:8080' \
+            -e KIRAYLA_DEMO_CLEANUP_INITIAL_DELAY=PT20S \
             kirayla-api
           for i in $(seq 1 60); do curl -sf http://localhost:8080/actuator/health && break; sleep 3; done
           curl -sf http://localhost:8080/actuator/health
@@ -84,6 +85,25 @@ jobs:
           # dates survive the round trip unchanged (container OS clock is UTC, the app zone is Asia/Baku)
           test "$(curl -sf http://localhost:8080/api/bookings/mine -H "Authorization: Bearer $USER" | jq -r '.[0].startDate + " " + .[0].endDate')" = "$FROM $TO"
           test "$(curl -sf http://localhost:8080/api/listings/5 | jq --arg f "$FROM" --arg t "$TO" '[.unavailable[] | select(.from == $f and .to == $t)] | length')" = "1"
+          # the public demo protects itself: other seed users cannot sign in, the demo admin sees masked e-mails only,
+          # the demo host cannot archive seeded listings, refresh tokens are single-use
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' \
+            -d '{"email":"leyla@kirayla.az","password":"Demo1234!"}')" = "401"
+          USERS=$(curl -sf 'http://localhost:8080/api/admin/users?size=100' -H "Authorization: Bearer $TOKEN")
+          test "$(echo "$USERS" | grep -c 'ci-renter@kirayla.test' || true)" = "0"
+          echo "$USERS" | grep -q 'c\*\*\*@kirayla.test'
+          test "$(curl -sf 'http://localhost:8080/api/admin/users?q=ci-renter' -H "Authorization: Bearer $TOKEN" | jq .totalElements)" = "0"
+          HOST=$(curl -sf -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' \
+            -d '{"email":"rashad@kirayla.az","password":"Demo1234!"}')
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X DELETE http://localhost:8080/api/listings/1 \
+            -H "Authorization: Bearer $(echo "$HOST" | jq -r .accessToken)")" = "403"
+          REFRESH=$(echo "$HOST" | jq -r .refreshToken)
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/auth/refresh -H 'Content-Type: application/json' -d "{\"refreshToken\":\"$REFRESH\"}")" = "200"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/auth/refresh -H 'Content-Type: application/json' -d "{\"refreshToken\":\"$REFRESH\"}")" = "401"
+          # the scheduled cleanup's SQL runs on PostgreSQL without errors
+          for i in $(seq 1 20); do docker logs api 2>&1 | grep -q 'Demo cleanup ran' && break; sleep 3; done
+          docker logs api 2>&1 | grep -q 'Demo cleanup ran'
+          ! docker logs api 2>&1 | grep -q 'Demo cleanup failed'
           # CORS: only the configured origin
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/categories -H 'Origin: https://evil.test')" = "403"
           curl -s -D - -o /dev/null http://localhost:8080/api/categories -H 'Origin: https://example.test' | grep -qi '^access-control-allow-origin: https://example.test'

@@ -124,7 +124,7 @@ export function DashShell({ kind, children }: { kind: "host" | "admin"; children
               <Icon name="menu" size={20} />
             </button>
             <div className="lg:hidden">{brand}</div>
-            <UserMenu tone="dark" />
+            <UserMenu tone="dark" avatarOnlyOnPhones />
           </header>
 
           {user?.readOnly && (

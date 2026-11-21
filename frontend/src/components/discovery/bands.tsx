@@ -50,8 +50,8 @@ export function CategoryBand({ category, items, locale, flip }: { category: Cate
       <div className={`grid gap-3 ${flip ? "md:grid-cols-[1fr_1.5fr] md:[&>*:first-child]:order-2" : "md:grid-cols-[1.5fr_1fr]"}`}>
         <Link href={`/c/${category.slug}`} className="group relative block min-h-[280px] overflow-hidden rounded-pillow bg-[#665a54] md:min-h-0">
           <Photo src={hero.coverUrl} alt="" fill sizes="(min-width: 768px) 60vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
-          <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/0 to-black/0" />
-          <span className="absolute left-6 top-5 max-w-[80%] text-white">
+          <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[58%] bg-gradient-to-b from-black/80 via-black/45 to-black/0" />
+          <span className="absolute left-4 top-4 max-w-[80%] rounded-[18px] bg-black/55 px-4 py-3 text-white backdrop-blur-md">
             <span className="block text-[26px] font-semibold leading-[1.05] tracking-[-0.045em] sm:text-[32px]">{catName(category, locale)}</span>
             <span className="mt-2 block text-[14px] opacity-90">
               {t("cityCount", { count: category.listingCount })}

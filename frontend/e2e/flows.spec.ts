@@ -190,12 +190,12 @@ test.describe.serial("Kirayla flows", () => {
     const errors = watchConsole(page);
     await login(page, "rashad@kirayla.az");
     await page.goto("/az/host");
-    const row = page.getByRole("row").filter({ hasText: renter.name });
+    const row = page.getByRole("listitem").filter({ hasText: renter.name });
     await row.getByRole("button", { name: /Təsdiqlə/ }).click();
     await expect(page.getByText("Sorğu təsdiqləndi")).toBeVisible();
     await page.goto("/az/host/bookings");
     await page.getByRole("button", { name: "Təsdiqlənib", exact: true }).click();
-    await page.getByRole("row").filter({ hasText: renter.name }).getByRole("button", { name: "Tamamlandı" }).click();
+    await page.getByRole("listitem").filter({ hasText: renter.name }).getByRole("button", { name: "Tamamlandı" }).click();
     await expect(page.getByText("Kirayə tamamlandı")).toBeVisible();
 
     await logout(page);
@@ -259,7 +259,14 @@ test.describe.serial("Kirayla flows", () => {
     await page.getByRole("button", { name: /Ev sahibi — Rəşad/ }).click();
     await page.waitForURL(/\/host$/);
     await expect(page.getByRole("heading", { level: 1 })).toContainText("Rəşad");
-    expect(errors).toEqual([]);
+    // the demo host cannot remove a listing that belongs to the shared seed
+    await page.goto("/az/host/listings");
+    await page.getByRole("button", { name: /^Sil: / }).first().click();
+    await expect(page.getByText("Bu, ortaq demo məlumatıdır")).toBeVisible();
+    await page.goto("/az/profile");
+    await page.getByRole("button", { name: "Yadda saxla" }).click();
+    await expect(page.getByText("Bu, ortaq demo məlumatıdır")).toBeVisible();
+    expect(errors.filter((e) => !e.includes("403"))).toEqual([]);
   });
 
   test("embeddable by the portfolio only: CSP frame-ancestors, no X-Frame-Options", async ({ request }) => {

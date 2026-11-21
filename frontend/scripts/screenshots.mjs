@@ -3,6 +3,7 @@
 //   node scripts/screenshots.mjs [outDir]       (API on :8080, web on :3000)
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { chromium } from "@playwright/test";
 
 const WEB = process.env.BASE_URL ?? "http://localhost:3000";
@@ -34,6 +35,15 @@ const pages = [
 ];
 const widths = (process.env.WIDTHS ?? "1920,1440,768,390").split(",").map(Number);
 const only = process.env.ONLY?.split(",");
+
+// Full-page PNGs are 1–5 MB each; the repo keeps WebP at most 1280px wide instead (about 100 KB each).
+// Needs ffmpeg on PATH; without it the PNG is kept. PNG=1 keeps PNGs on purpose.
+const hasFfmpeg = !process.env.PNG && spawnSync("ffmpeg", ["-version"]).status === 0;
+function toWebp(png) {
+  if (!hasFfmpeg) return;
+  const r = spawnSync("ffmpeg", ["-y", "-loglevel", "error", "-i", png, "-vf", "scale='min(1280,iw)':-2", "-c:v", "libwebp", "-q:v", "58", png.replace(/\.png$/, ".webp")]);
+  if (r.status === 0) fs.rmSync(png);
+}
 
 const browser = await chromium.launch();
 const report = [];
@@ -91,7 +101,11 @@ for (const p of pages.filter((p) => !only || only.includes(p.name))) {
         .map((el) => `${el.tagName.toLowerCase()}[${(el.getAttribute("aria-label") ?? el.textContent ?? "").trim().slice(0, 30)}] ${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`);
       return { overflow: sw > vw, sw, vw, wide, small };
     });
-    if (!process.env.NOSHOT) await page.screenshot({ path: path.join(out, `${p.name}-${w}.png`), fullPage: true, animations: "disabled", timeout: 90000 });
+    if (!process.env.NOSHOT) {
+      const png = path.join(out, `${p.name}-${w}.png`);
+      await page.screenshot({ path: png, fullPage: true, animations: "disabled", timeout: 90000 });
+      toWebp(png);
+    }
     report.push({ page: p.name, w, ...audit, errors });
     console.log(`${p.name}@${w}: overflow=${audit.overflow}${audit.overflow ? ` (${audit.sw}>${audit.vw}) ${audit.wide.join(" | ")}` : ""} errors=${errors.length}${errors.length ? " " + errors.join(" || ") : ""}${audit.small.length ? " small=" + audit.small.join(", ") : ""}`);
     await ctx.close();

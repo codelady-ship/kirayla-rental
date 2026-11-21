@@ -218,7 +218,8 @@ export interface Report {
   id: number;
   listing: { id: number; title: string; status: ListingStatus };
   reporter: { id: number; name: string };
-  reason: string;
+  /** null when the API hides it from the read-only demo admin */
+  reason: string | null;
   status: ReportStatus;
   createdAt: string;
 }

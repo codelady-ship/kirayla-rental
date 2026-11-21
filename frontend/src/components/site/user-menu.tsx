@@ -8,7 +8,7 @@ import { useAuth } from "../providers";
 import { Avatar, LangSwitch } from "../ui";
 
 /** Pill button (hamburger + avatar) with a dropdown — shared by the market header and the dashboards. */
-export function UserMenu({ tone = "light", align = "right" }: { tone?: "light" | "dark"; align?: "right" | "left" }) {
+export function UserMenu({ tone = "light", align = "right", avatarOnlyOnPhones = false }: { tone?: "light" | "dark"; align?: "right" | "left"; avatarOnlyOnPhones?: boolean }) {
   const t = useTranslations("Nav");
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -58,11 +58,11 @@ export function UserMenu({ tone = "light", align = "right" }: { tone?: "light" |
         aria-haspopup="menu"
         aria-label={t("menu")}
         onClick={() => setOpen((o) => !o)}
-        className={`flex min-h-11 items-center gap-2.5 rounded-full py-1 pl-3.5 pr-1.5 transition-shadow ${
+        className={`flex min-h-11 min-w-11 items-center justify-center gap-2.5 rounded-full py-1 pr-1.5 transition-shadow ${avatarOnlyOnPhones ? "max-lg:pl-1.5 lg:pl-3.5" : "pl-3.5"} ${
           dark ? "border border-slate-line text-ivory hover:bg-obsidian" : "border border-[#dddddd] bg-white text-hof hover:shadow-[0_2px_4px_rgba(0,0,0,0.18)]"
         }`}
       >
-        <Icon name="menu" size={18} />
+        <Icon name="menu" size={18} className={avatarOnlyOnPhones ? "max-lg:hidden" : ""} />
         {user ? <Avatar name={user.name} src={user.avatarUrl} size={32} /> : <span className={`flex size-8 items-center justify-center rounded-full ${dark ? "bg-obsidian" : "bg-[#717171] text-white"}`}><Icon name="user" size={18} /></span>}
       </button>
       {open && (
