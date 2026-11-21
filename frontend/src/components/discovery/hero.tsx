@@ -1,0 +1,141 @@
+"use client";
+
+import { useLocale, useTranslations } from "next-intl";
+import { useState, type CSSProperties, type FormEvent } from "react";
+import { Link, useRouter } from "@/i18n/navigation";
+import { catName, money } from "@/lib/format";
+import type { Category, ListingCard } from "@/lib/types";
+import { CATEGORY_TINT, Icon } from "../icons";
+import { Photo, Wordmark } from "../ui";
+
+// The floating row above the wordmark. Cards share the row's width (flex), so they can never cover each
+// other's title or price at any viewport; "floating" comes from the stagger (drop), the tilt and the bob.
+// grow = relative width, drop = px from the top, r = tilt, d = float delay; "wideOnly" cards appear from 1280px.
+const SPOTS: { grow: number; drop: number; r: number; d: number; wideOnly?: boolean }[] = [
+  { grow: 1.04, drop: 40, r: -3, d: 0 },
+  { grow: 0.94, drop: 4, r: 2.5, d: 1.4, wideOnly: true },
+  { grow: 1.1, drop: 52, r: -2, d: 0.6 },
+  { grow: 0.98, drop: 10, r: 2, d: 2.1 },
+  { grow: 1.08, drop: 46, r: -2.5, d: 0.9 },
+  { grow: 0.94, drop: 0, r: 3, d: 1.8, wideOnly: true },
+  { grow: 1.02, drop: 30, r: -1.5, d: 0.3 },
+];
+
+function FloatCard({ l, spot, locale }: { l: ListingCard; spot: (typeof SPOTS)[number]; locale: string }) {
+  const style = { flexGrow: spot.grow, marginTop: spot.drop, rotate: `${spot.r}deg`, animationDelay: `${spot.d}s` } as CSSProperties;
+  return (
+    <Link
+      href={`/listing/${l.id}`}
+      style={style}
+      className={`group min-w-0 basis-0 animate-float rounded-pillow bg-white p-2 shadow-[var(--shadow-float)] transition-shadow hover:shadow-[var(--shadow-lift)] ${spot.wideOnly ? "max-xl:hidden" : ""}`}
+    >
+      <span className="relative block aspect-square overflow-hidden rounded-pillow-inner bg-[#ece9e7]">
+        <Photo src={l.coverUrl} alt="" fill sizes="190px" className="object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
+      </span>
+      <span className="block px-1.5 pb-1 pt-2">
+        <span className="block truncate text-[14px] font-semibold tracking-[-0.014em]">{l.title}</span>
+        <span className="mt-0.5 flex items-center justify-between gap-2 text-[12px] text-stone">
+          <span className="num truncate">
+            {money(l.dailyPrice, locale)}
+            <span className="text-[11px]"> / {locale === "en" ? "day" : "gün"}</span>
+          </span>
+          {l.reviewCount > 0 && (
+            <span className="flex shrink-0 items-center gap-0.5 text-[11px] text-ink" aria-label={`${l.ratingAvg} / 5`}>
+              <Icon name="star" size={9} fill="currentColor" strokeWidth={0} />
+              <span className="num">{l.ratingAvg.toFixed(1)}</span>
+            </span>
+          )}
+        </span>
+      </span>
+    </Link>
+  );
+}
+
+export function DiscoveryHero({ featured, categories }: { featured: ListingCard[]; categories: Category[] }) {
+  const t = useTranslations("Home");
+  const locale = useLocale();
+  const router = useRouter();
+  const [q, setQ] = useState("");
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    router.push(q.trim() ? `/search?q=${encodeURIComponent(q.trim())}` : "/search");
+  };
+
+  return (
+    <section className="mx-auto max-w-[1200px] px-4 pb-6 2xl:max-w-[1440px] pt-2 sm:px-6 lg:pt-10" aria-labelledby="hero-title">
+      {/* constellation */}
+      <div aria-label={t("constellationLabel")} role="group" className="mx-auto hidden max-w-[1120px] items-start gap-2.5 pb-3 sm:flex md:gap-3.5 xl:gap-4">
+        {featured.slice(0, SPOTS.length).map((l, i) => (
+          <FloatCard key={l.id} l={l} spot={SPOTS[i]} locale={locale} />
+        ))}
+      </div>
+      {/* phones: a short swipeable strip instead of the overlapping cloud */}
+      <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-4 pt-2 scrollbar-none sm:hidden" aria-label={t("constellationLabel")} role="group">
+        {featured.slice(0, 6).map((l, i) => (
+          <Link
+            key={l.id}
+            href={`/listing/${l.id}`}
+            className="w-[42%] shrink-0 snap-start rounded-pillow bg-white p-2 shadow-[var(--shadow-float)]"
+            style={{ transform: `rotate(${i % 2 ? 1.5 : -1.5}deg)` }}
+          >
+            <span className="relative block aspect-square overflow-hidden rounded-pillow-inner bg-[#ece9e7]">
+              <Photo src={l.coverUrl} alt="" fill sizes="45vw" className="object-cover" />
+            </span>
+            <span className="block truncate px-1 pt-2 text-[13px] font-semibold">{l.title}</span>
+            <span className="num block px-1 pb-1 text-[12px] text-stone">{money(l.dailyPrice, locale)}</span>
+          </Link>
+        ))}
+      </div>
+
+      <div className="relative z-10 mt-4 text-center sm:mt-2">
+        <h1 id="hero-title" className="flex justify-center">
+          <Wordmark className="text-[52px] leading-none sm:text-[72px]" />
+          <span className="sr-only"> — {t("tagline")}</span>
+        </h1>
+        <p className="mx-auto mt-4 max-w-[30rem] text-[16px] leading-[1.38] tracking-tight-16 text-stone" aria-hidden="true">
+          {t("tagline")}
+        </p>
+
+        <form role="search" onSubmit={submit} className="mx-auto mt-8 flex max-w-[560px] items-center rounded-full border border-black/10 bg-white py-1 pl-5 pr-1 shadow-[var(--shadow-soft)]">
+          <label htmlFor="home-q" className="sr-only">
+            {t("searchLabel")}
+          </label>
+          <Icon name="search" size={18} className="shrink-0 text-stone" />
+          <input
+            id="home-q"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder={t("searchPlaceholder")}
+            className="h-12 min-w-0 flex-1 bg-transparent px-3 text-[16px] tracking-tight-16 placeholder:text-stone focus:outline-none"
+          />
+          <button
+            type="submit"
+            aria-label={t("searchSubmit")}
+            className="flex size-12 shrink-0 items-center justify-center rounded-full bg-violet text-white shadow-[var(--shadow-violet)] transition-transform hover:scale-[1.04] active:scale-95"
+          >
+            <Icon name="arrowRight" size={20} strokeWidth={2} />
+          </button>
+        </form>
+
+        <nav aria-label={t("categoriesLabel")} className="-mx-4 mt-6 overflow-x-auto px-4 pb-2 scrollbar-none">
+          <ul className="mx-auto flex w-max gap-2 md:w-auto md:max-w-[1000px] md:flex-wrap md:justify-center">
+            {categories.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={`/c/${c.slug}`}
+                  className="flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-hair bg-white py-1.5 pl-1.5 pr-4 text-[15px] tracking-[-0.014em] shadow-[var(--shadow-soft)] transition-colors hover:border-[#d6d6d6]"
+                >
+                  <span className="flex size-8 items-center justify-center rounded-full" style={{ background: CATEGORY_TINT[c.icon] ?? "#f2f4f5" }}>
+                    <Icon name={c.icon} size={16} />
+                  </span>
+                  {catName(c, locale)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </section>
+  );
+}

@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:kirayla-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000
+    username: sa
+    password: ""
+
+kirayla:
+  jwt:
+    secret: test-only-not-a-secret-kirayla-0000
+  storage:
+    dir: ./target/test-uploads
+  admin:
+    email: ""
+    password: ""
