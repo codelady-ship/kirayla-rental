@@ -8,22 +8,25 @@ import type { Category, ListingCard } from "@/lib/types";
 import { CATEGORY_TINT, Icon } from "../icons";
 import { Photo, Wordmark } from "../ui";
 
-// Hand-placed constellation: left/top in %, width in px, tilt, float delay. Tuned by eye at 1440 and 768.
-const SPOTS: { l: number; t: number; w: number; r: number; d: number; z: number; hideSm?: boolean }[] = [
-  { l: 4, t: 18, w: 168, r: -5, d: 0, z: 2 },
-  { l: 17, t: 0, w: 148, r: 3, d: 1.4, z: 1, hideSm: true },
-  { l: 27, t: 34, w: 182, r: -2, d: 0.6, z: 3 },
-  { l: 43, t: 4, w: 156, r: 2.5, d: 2.1, z: 2 },
-  { l: 57, t: 30, w: 176, r: -3.5, d: 0.9, z: 3 },
-  { l: 71, t: 2, w: 150, r: 4, d: 1.8, z: 1, hideSm: true },
-  { l: 81, t: 22, w: 166, r: -1.5, d: 0.3, z: 2 },
+// Hand-placed constellation. l = left % at ≥1280 (7 cards), lm = left % at 640–1279 (5 cards, the two "wide only"
+// ones are hidden), t = top px, w = width px (scaled by --k below 1280), r = tilt, d = float delay.
+// Neighbours overlap by ~12px — the card's own padding — so no title is ever covered.
+const SPOTS: { l: number; lm: number; t: number; w: number; r: number; d: number; z: number; wideOnly?: boolean }[] = [
+  { l: 0, lm: 0, t: 44, w: 160, r: -4, d: 0, z: 2 },
+  { l: 14.2, lm: 0, t: 4, w: 150, r: 3, d: 1.4, z: 1, wideOnly: true },
+  { l: 27.5, lm: 20.5, t: 56, w: 172, r: -2, d: 0.6, z: 3 },
+  { l: 42.9, lm: 41, t: 10, w: 156, r: 2.5, d: 2.1, z: 2 },
+  { l: 56.7, lm: 60.5, t: 50, w: 168, r: -3, d: 0.9, z: 3 },
+  { l: 71.2, lm: 0, t: 0, w: 150, r: 3.5, d: 1.8, z: 1, wideOnly: true },
+  { l: 84.6, lm: 81, t: 34, w: 160, r: -1.5, d: 0.3, z: 2 },
 ];
 
 function FloatCard({ l, spot, locale }: { l: ListingCard; spot: (typeof SPOTS)[number]; locale: string }) {
   const style = {
-    left: `${spot.l}%`,
-    top: `${spot.t}%`,
-    width: spot.w,
+    "--l": `${spot.l}%`,
+    "--lm": `${spot.lm}%`,
+    top: spot.t,
+    width: `calc(${spot.w}px * var(--k))`,
     zIndex: spot.z,
     "--r": `${spot.r}deg`,
     animationDelay: `${spot.d}s`,
@@ -32,7 +35,7 @@ function FloatCard({ l, spot, locale }: { l: ListingCard; spot: (typeof SPOTS)[n
     <Link
       href={`/listing/${l.id}`}
       style={style}
-      className={`group absolute animate-float rounded-pillow bg-white p-2 shadow-[var(--shadow-float)] transition-shadow hover:shadow-[var(--shadow-lift)] ${spot.hideSm ? "hidden md:block" : ""}`}
+      className={`group absolute left-[min(var(--lm),calc(100%_-_var(--k)_*_170px))] animate-float rounded-pillow bg-white p-2 shadow-[var(--shadow-float)] transition-shadow hover:shadow-[var(--shadow-lift)] xl:left-[var(--l)] ${spot.wideOnly ? "max-xl:hidden" : ""}`}
     >
       <span className="relative block aspect-square overflow-hidden rounded-pillow-inner bg-[#ece9e7]">
         <Photo src={l.coverUrl} alt="" fill sizes="190px" className="object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
@@ -70,7 +73,7 @@ export function DiscoveryHero({ featured, categories }: { featured: ListingCard[
   return (
     <section className="mx-auto max-w-[1200px] px-4 pb-6 pt-2 sm:px-6 lg:pt-10" aria-labelledby="hero-title">
       {/* constellation */}
-      <div aria-label={t("constellationLabel")} role="group" className="relative mx-auto hidden h-[300px] max-w-[1040px] sm:block md:h-[330px]">
+      <div aria-label={t("constellationLabel")} role="group" className="relative mx-auto hidden h-[250px] max-w-[1040px] [--k:0.7] sm:block md:h-[270px] md:[--k:0.82] xl:h-[300px] xl:[--k:1]">
         {featured.slice(0, SPOTS.length).map((l, i) => (
           <FloatCard key={l.id} l={l} spot={SPOTS[i]} locale={locale} />
         ))}
@@ -93,9 +96,9 @@ export function DiscoveryHero({ featured, categories }: { featured: ListingCard[
         ))}
       </div>
 
-      <div className="relative z-10 mt-4 text-center sm:-mt-6">
+      <div className="relative z-10 mt-4 text-center sm:mt-2">
         <h1 id="hero-title" className="flex justify-center">
-          <Wordmark className="text-[64px] leading-none sm:text-[88px]" />
+          <Wordmark className="text-[52px] leading-none sm:text-[72px]" />
           <span className="sr-only"> — {t("tagline")}</span>
         </h1>
         <p className="mx-auto mt-4 max-w-[30rem] text-[16px] leading-[1.38] tracking-tight-16 text-stone" aria-hidden="true">

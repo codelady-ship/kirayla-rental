@@ -227,7 +227,7 @@ export function ListingView({ listing, demo }: { listing: ListingDetail; demo: b
                 <summary className="inline-flex min-h-11 cursor-pointer items-center underline underline-offset-2">{t("credits")}</summary>
                 <ul className="mt-2 space-y-1">
                   {listing.photos.map((p, i) => (
-                    <li key={p.id}>
+                    <li key={p.id} translate="no">
                       {i + 1}.{" "}
                       {p.creditUrl ? (
                         <a href={p.creditUrl} className="underline underline-offset-2 hover:text-hof" rel="noopener nofollow" target="_blank">

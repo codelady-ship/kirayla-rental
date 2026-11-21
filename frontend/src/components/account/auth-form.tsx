@@ -4,11 +4,12 @@ import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
-import { ApiError } from "@/lib/api";
+import { API_CONFIGURED, ApiError } from "@/lib/api";
 import { CITIES } from "@/lib/format";
 import { safeNext } from "@/lib/safe-next";
 import { Icon } from "../icons";
 import { useApiErrorToast, useAuth, useToast } from "../providers";
+import { brand } from "../brand";
 import { Spinner } from "../ui";
 
 export const DEMO_ACCOUNTS = [
@@ -103,8 +104,13 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
   return (
     <div className="mx-auto grid max-w-[1000px] gap-10 px-4 py-10 sm:px-6 md:grid-cols-[1fr_340px] md:py-16">
       <div className="max-w-[440px]">
-        <h1 className="text-[28px] font-semibold tracking-[-0.02em]">{mode === "login" ? t("loginTitle") : t("registerTitle")}</h1>
+        <h1 className="text-[28px] font-semibold tracking-[-0.02em]">{mode === "login" ? t("loginTitle") : t.rich("registerTitle", { brand })}</h1>
         <p className="mt-2 text-foggy">{mode === "login" ? t("loginSub") : t("registerSub")}</p>
+        {!API_CONFIGURED && (
+          <p role="status" className="mt-6 rounded-lg bg-[#fff6e5] px-4 py-3 text-[14px] text-[#5c3b00]">
+            {tc("noApi")}
+          </p>
+        )}
         <form onSubmit={submit} className="mt-8 space-y-5">
           {mode === "register" && field("name", t("name"), "text", { required: true, minLength: 2, maxLength: 80, autoComplete: "name" })}
           {field("email", t("email"), "email", { required: true, autoComplete: "email" })}
@@ -157,7 +163,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               {error}
             </p>
           )}
-          <button type="submit" disabled={!!busy} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-coral-deep text-[16px] font-semibold text-white disabled:opacity-60">
+          <button type="submit" disabled={!!busy || !API_CONFIGURED} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg bg-coral-deep text-[16px] font-semibold text-white disabled:opacity-60">
             {busy === "form" && <Spinner />}
             {mode === "login" ? t("submitLogin") : t("submitRegister")}
           </button>
@@ -180,7 +186,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
             <li key={d.key}>
               <button
                 type="button"
-                disabled={!!busy}
+                disabled={!!busy || !API_CONFIGURED}
                 onClick={() => demo(d.key, d.email)}
                 className="flex min-h-14 w-full items-center gap-3 rounded-lg border border-deco bg-white px-4 text-left transition-colors hover:border-hof disabled:opacity-60"
               >
@@ -189,7 +195,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
                 </span>
                 <span className="min-w-0">
                   <span className="block text-[14px] font-medium">{t(d.key)}</span>
-                  <span className="block truncate text-[12px] text-foggy">{d.email}</span>
+                  <span className="block truncate text-[12px] text-foggy" translate="no">{d.email}</span>
                 </span>
               </button>
             </li>

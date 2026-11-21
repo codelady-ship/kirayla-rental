@@ -10,6 +10,7 @@ import { useRequireAuth } from "@/lib/use-require-auth";
 import { Icon } from "../icons";
 import { ListingCard } from "../market/listing-card";
 import { useApiErrorToast, useAuth, useToast, useWishlist } from "../providers";
+import { brand } from "../brand";
 import { Avatar, Spinner } from "../ui";
 
 export function Wishlist() {
@@ -100,7 +101,7 @@ export function Profile() {
           <Avatar name={user.name} src={user.avatarUrl} size={104} />
           <p className="mt-4 text-[24px] font-semibold leading-tight">{user.name}</p>
           <p className="text-[14px] text-foggy">{t(`role_${user.role}`)}</p>
-          <p className="mt-3 text-[14px] text-foggy">{t("member", { date: fmtDate(user.joinedAt, locale, { month: "long", year: "numeric" }) })}</p>
+          <p className="mt-3 text-[14px] text-foggy">{t.rich("member", { date: fmtDate(user.joinedAt, locale, { month: "long", year: "numeric" }), brand })}</p>
         </div>
         <h2 className="mb-2 mt-8 text-[16px] font-semibold">{t("quick")}</h2>
         <ul>

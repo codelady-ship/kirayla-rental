@@ -127,7 +127,7 @@ export function HostOverview() {
         </div>
       ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 xl:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             <Stat label={t("totalEarned")} value={fm(e.totalEarned)} />
             <Stat label={t("upcoming")} value={fm(e.upcoming)} />
             <Stat label={t("pending")} value={String(e.pendingRequests)} />

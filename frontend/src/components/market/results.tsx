@@ -98,18 +98,18 @@ function Filters({ params, categories, fixedCategory, onApply, idPrefix }: { par
       </fieldset>
       <fieldset>
         <legend className={label}>{t("dates")}</legend>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-3">
           <div>
             <label htmlFor={`${idPrefix}-from`} className="mb-1 block text-[12px] text-foggy">
               {tc("from")}
             </label>
-            <input id={`${idPrefix}-from`} type="date" min={today()} className="market-input px-2 text-[14px]" value={draft.from ?? ""} onChange={(e) => set("from", e.target.value)} />
+            <input id={`${idPrefix}-from`} type="date" min={today()} className="market-input text-[15px]" value={draft.from ?? ""} onChange={(e) => set("from", e.target.value)} />
           </div>
           <div>
             <label htmlFor={`${idPrefix}-to`} className="mb-1 block text-[12px] text-foggy">
               {tc("to")}
             </label>
-            <input id={`${idPrefix}-to`} type="date" min={draft.from ?? today()} className="market-input px-2 text-[14px]" value={draft.to ?? ""} onChange={(e) => set("to", e.target.value)} />
+            <input id={`${idPrefix}-to`} type="date" min={draft.from ?? today()} className="market-input text-[15px]" value={draft.to ?? ""} onChange={(e) => set("to", e.target.value)} />
           </div>
         </div>
       </fieldset>
@@ -121,7 +121,7 @@ function Filters({ params, categories, fixedCategory, onApply, idPrefix }: { par
         >
           {t("clear")}
         </button>
-        <button type="submit" className="min-h-12 rounded-lg bg-hof px-6 text-[15px] font-medium text-white">
+        <button type="submit" className="min-h-12 whitespace-nowrap rounded-lg bg-hof px-5 text-[15px] font-medium text-white">
           {t("showResults")}
         </button>
       </div>
@@ -245,7 +245,7 @@ export function ResultsView({ fixedCategory, heading }: { fixedCategory?: string
               {tc("error")}
             </p>
           ) : !res.data ? (
-            <div className="grid grid-cols-1 gap-x-6 gap-y-10 min-[520px]:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-x-6 gap-y-10 min-[520px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 6 }, (_, i) => (
                 <CardSkeleton key={i} />
               ))}
@@ -261,7 +261,7 @@ export function ResultsView({ fixedCategory, heading }: { fixedCategory?: string
             </div>
           ) : (
             <>
-              <ul className="grid grid-cols-1 gap-x-6 gap-y-10 min-[520px]:grid-cols-2 md:grid-cols-3 2xl:grid-cols-4">
+              <ul className="grid grid-cols-1 gap-x-6 gap-y-10 min-[520px]:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                 {res.data.content.map((l, i) => (
                   <li key={l.id}>
                     <ListingCard l={l} priority={i < 3} />

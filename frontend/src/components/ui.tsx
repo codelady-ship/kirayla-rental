@@ -4,6 +4,7 @@ import Image, { type ImageProps } from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import { Link, usePathname } from "@/i18n/navigation";
+import { API_CONFIGURED } from "@/lib/api";
 import { initials } from "@/lib/format";
 import { Icon } from "./icons";
 import { useDemoMode } from "./providers";
@@ -76,8 +77,8 @@ export function DemoBanner({ tone = "light" }: { tone?: "light" | "dark" }) {
         tone === "dark" ? "bg-obsidian text-ivory" : "bg-[#fff6e5] text-[#5c3b00]"
       }`}
     >
-      <span aria-hidden="true" className="inline-block size-2 animate-pulse rounded-full bg-current" />
-      {t("demoMode")}
+      {API_CONFIGURED && <span aria-hidden="true" className="inline-block size-2 animate-pulse rounded-full bg-current" />}
+      {API_CONFIGURED ? t("demoMode") : t("demoOffline")}
     </div>
   );
 }

@@ -23,6 +23,8 @@
     "error": "Nəsə alınmadı. Bir az sonra yenidən yoxla.",
     "network": "Serverə qoşulmaq olmur. İnterneti yoxla və ya bir az sonra yenə cəhd et.",
     "demoMode": "Server oyanır — hələlik demo məlumatlar göstərilir. Səhifə öz-özünə yenilənəcək.",
+    "demoOffline": "Demo rejimi: nümunə elanlar göstərilir. Giriş, bron və mesajlar server qoşulanda işləyəcək.",
+    "noApi": "Bu demoda server hələ qoşulmayıb, ona görə giriş və qeydiyyat işləmir. Elanlara baxmaq olar.",
     "demoReadOnly": "Demo admin yalnız oxuma rejimindədir — dəyişikliklər bu demoda söndürülüb.",
     "deposit": "Depozit",
     "from": "Başlanğıc",
@@ -221,7 +223,7 @@
     "city": "Şəhər",
     "bio": "Haqqında",
     "saved": "Profil yeniləndi",
-    "member": "{date} tarixindən Kiraylada",
+    "member": "{date} tarixindən <brand>Kirayla</brand>da",
     "quick": "Qısa keçidlər",
     "role_USER": "İstifadəçi",
     "role_ADMIN": "Admin"
@@ -229,7 +231,7 @@
   "Auth": {
     "loginTitle": "Yenidən xoş gördük",
     "loginSub": "Kirayələrini, mesajlarını və panelini görmək üçün daxil ol.",
-    "registerTitle": "Kiraylaya qoşul",
+    "registerTitle": "<brand>Kirayla</brand>ya qoşul",
     "registerSub": "Bir hesabla həm kirayə götür, həm də öz əşyanı kirayə ver.",
     "name": "Ad, soyad",
     "email": "E-poçt",
@@ -375,15 +377,15 @@
     "forbidden": "Bu bölməyə giriş yalnız adminlər üçündür."
   },
   "Footer": {
-    "about": "Kirayla — Azərbaycanda insanların bir-birinə əşya kirayə verdiyi açıq bazar. Portfolio layihəsidir: ödənişlər real deyil.",
+    "about": "<brand>Kirayla</brand> — Azərbaycanda insanların bir-birinə əşya kirayə verdiyi açıq bazar. Portfolio layihəsidir: ödənişlər real deyil.",
     "explore": "Kəşf et",
     "host": "Ev sahibləri üçün",
     "company": "Layihə",
     "howItWorks": "Necə işləyir",
     "api": "API sənədləri",
     "source": "Mənbə kodu",
-    "credits": "Fotolar: Wikimedia Commons müəllifləri (CC0 / CC BY / CC BY-SA), hər elanda göstərilir.",
-    "rights": "© {year} Kirayla. Portfolio demosu."
+    "credits": "Fotolar: <brand>Wikimedia Commons</brand> müəllifləri (CC0 / CC BY / CC BY-SA), hər elanda göstərilir.",
+    "rights": "© {year} <brand>Kirayla</brand>. Portfolio demosu."
   },
   "NotFound": {
     "title": "Səhifə tapılmadı",

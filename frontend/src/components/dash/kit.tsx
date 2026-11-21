@@ -17,7 +17,7 @@ export function PageHead({ title, sub, action }: { title: string; sub?: string; 
 
 export function Card({ title, sub, children, className = "", action }: { title?: string; sub?: string; children: ReactNode; className?: string; action?: ReactNode }) {
   return (
-    <section className={`rounded-[12px] bg-graphite p-6 sm:p-8 ${className}`} aria-label={title}>
+    <section className={`min-w-0 rounded-[12px] bg-graphite p-6 sm:p-8 ${className}`} aria-label={title}>
       {(title || action) && (
         <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -34,9 +34,9 @@ export function Card({ title, sub, children, className = "", action }: { title?:
 
 export function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-[12px] bg-graphite p-6">
+    <div className="min-w-0 rounded-[12px] bg-graphite p-4 sm:p-6">
       <p className="text-[14px] tracking-[0.005em] text-ash">{label}</p>
-      <p className="num mt-3 text-[28px] font-[480] leading-none tracking-[0.015em] sm:text-[32px]">{value}</p>
+      <p className="num mt-3 text-[24px] font-[480] leading-none tracking-[0.015em] sm:text-[28px]">{value}</p>
       {hint && <p className="mt-2 text-[12px] text-ash">{hint}</p>}
     </div>
   );
@@ -92,7 +92,8 @@ export function Table({ head, children, minWidth = 720 }: { head: string[]; chil
 /** Minimal SVG bar chart; the numbers are also in a visually hidden table for screen readers. */
 export function BarChart({ data, format, label }: { data: { label: string; value: number }[]; format: (n: number) => string; label: string }) {
   const t = useTranslations("Dash");
-  const max = Math.max(1, ...data.map((d) => d.value));
+  const peak = Math.max(0, ...data.map((d) => d.value));
+  const max = peak <= 2 ? 2 : Math.ceil(peak / 2) * 2;
   const H = 200;
   const step = 100 / data.length;
   const ticks = [0, 0.5, 1].map((f) => Math.round(max * f));
@@ -123,7 +124,7 @@ export function BarChart({ data, format, label }: { data: { label: string; value
           </svg>
           <div className="mt-2 flex text-[11px] text-ash" aria-hidden="true">
             {data.map((d, i) => (
-              <span key={d.label + i} className="flex-1 text-center capitalize">
+              <span key={d.label + i} className="flex-1 text-center">
                 {d.label}
               </span>
             ))}

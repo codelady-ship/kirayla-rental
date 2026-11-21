@@ -38,7 +38,7 @@ export function MarketHeader({ initialQuery = "" }: { initialQuery?: string }) {
             placeholder={th("searchPlaceholder")}
             className="h-12 min-w-0 flex-1 rounded-full bg-transparent pl-5 text-[14px] font-medium text-hof placeholder:font-normal placeholder:text-foggy focus:outline-none"
           />
-          <button type="submit" aria-label={th("searchSubmit")} className="m-1.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-coral-deep text-white sm:size-10">
+          <button type="submit" aria-label={th("searchSubmit")} className="m-0.5 flex size-11 shrink-0 items-center justify-center rounded-full bg-coral-deep text-white">
             <Icon name="search" size={16} strokeWidth={2.4} />
           </button>
         </form>
@@ -47,7 +47,7 @@ export function MarketHeader({ initialQuery = "" }: { initialQuery?: string }) {
           <Link href="/host/listings/new" className="hidden min-h-11 items-center rounded-full px-4 text-[14px] font-medium text-hof hover:bg-faint lg:inline-flex">
             {t("becomeHost")}
           </Link>
-          <LangSwitch className="hidden text-hof hover:bg-faint sm:inline-flex" />
+          <LangSwitch className="text-hof hover:bg-faint max-sm:hidden" />
           <UserMenu />
         </nav>
       </div>

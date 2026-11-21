@@ -1,4 +1,5 @@
-// Screenshots + layout audit: 6 key pages × 4 widths. Flags horizontal overflow, console errors, small tap targets.
+// Screenshots + layout audit: 6 key pages × 4 widths. Flags horizontal overflow, console errors, tap targets under 44px.
+//   LANG_CODE=en · WIDTHS=320,390 · ONLY=home,admin · NOSHOT=1 (audit only) · EXTRA='[{"name":"x","url":"/az/x"}]'
 //   node scripts/screenshots.mjs [outDir]       (API on :8080, web on :3000)
 import fs from "node:fs";
 import path from "node:path";
@@ -83,14 +84,14 @@ for (const p of pages.filter((p) => !only || only.includes(p.name))) {
           const s = getComputedStyle(el);
           if (s.visibility === "hidden" || el.closest(".sr-only")) return false;
           if (el.tagName === "A" && el.closest("p, li") && getComputedStyle(el).display === "inline") return false; // inline text links
-          return r.width < 44 && r.height < 44;
+          if (String(el.className).includes("after:absolute")) return false; // card title: the ::after overlay makes the whole card the target
+          return r.width < 43.5 || r.height < 43.5;
         })
-        .slice(0, 6)
+        .slice(0, 8)
         .map((el) => `${el.tagName.toLowerCase()}[${(el.getAttribute("aria-label") ?? el.textContent ?? "").trim().slice(0, 30)}] ${Math.round(el.getBoundingClientRect().width)}x${Math.round(el.getBoundingClientRect().height)}`);
       return { overflow: sw > vw, sw, vw, wide, small };
     });
-    const file = path.join(out, `${p.name}-${w}.png`);
-    await page.screenshot({ path: file, fullPage: true });
+    if (!process.env.NOSHOT) await page.screenshot({ path: path.join(out, `${p.name}-${w}.png`), fullPage: true, animations: "disabled", timeout: 90000 });
     report.push({ page: p.name, w, ...audit, errors });
     console.log(`${p.name}@${w}: overflow=${audit.overflow}${audit.overflow ? ` (${audit.sw}>${audit.vw}) ${audit.wide.join(" | ")}` : ""} errors=${errors.length}${errors.length ? " " + errors.join(" || ") : ""}${audit.small.length ? " small=" + audit.small.join(", ") : ""}`);
     await ctx.close();

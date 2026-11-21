@@ -88,7 +88,7 @@ export function AdminOverview() {
     <>
       <PageHead title={t("admin")} sub={t("adminSub")} />
       <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <Stat label={t("users")} value={String(s.users)} />
           <Stat label={t("activeListings")} value={`${s.activeListings}`} hint={`${s.listings} · ${t("status_HIDDEN")}: ${s.hiddenListings}`} />
           <Stat label={t("gmv")} value={money(s.gmv, locale)} hint={`${s.bookings} ${t("allBookings").toLowerCase()}`} />

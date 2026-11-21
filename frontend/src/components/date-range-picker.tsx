@@ -2,12 +2,11 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
-import { addDays, isoDay, parseDay, today } from "@/lib/format";
+import { addDays, dayLabel, isoDay, monthTitle, parseDay, today, weekdayNarrow } from "@/lib/format";
 import type { Unavailable } from "@/lib/types";
 import { Icon } from "./icons";
 
 type Range = { from: string | null; to: string | null };
-const TAG: Record<string, string> = { az: "az-Latn-AZ", en: "en-GB" };
 
 function monthDays(year: number, month: number) {
   const first = new Date(year, month, 1);
@@ -64,12 +63,12 @@ export function DateRangePicker({
 
   const months = [0, 1].map((k) => {
     const date = new Date(view.y, view.m + k, 1);
-    return { y: date.getFullYear(), m: date.getMonth(), label: new Intl.DateTimeFormat(TAG[locale] ?? locale, { month: "long", year: "numeric" }).format(date) };
+    return { y: date.getFullYear(), m: date.getMonth(), label: monthTitle(date.getFullYear(), date.getMonth(), locale) };
   });
   // keep exactly one day reachable with Tab even when the remembered day scrolled out of view
   const firstMonthDays = monthDays(months[0].y, months[0].m).days.filter((d) => !disabled(d));
   const tabTarget = firstMonthDays.includes(focus) || monthDays(months[1].y, months[1].m).days.includes(focus) ? focus : firstMonthDays[0];
-  const weekdays = Array.from({ length: 7 }, (_, i) => new Intl.DateTimeFormat(TAG[locale] ?? locale, { weekday: "narrow" }).format(new Date(2024, 0, 1 + i)));
+  const weekdays = weekdayNarrow(locale);
 
   const onKey = (e: KeyboardEvent<HTMLButtonElement>, d: string) => {
     const delta = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
@@ -105,7 +104,7 @@ export function DateRangePicker({
           const { lead, days } = monthDays(mo.y, mo.m);
           return (
             <div key={mo.label} className={idx === 1 ? "hidden md:block" : ""}>
-              <h3 className="mb-3 text-center text-[15px] font-semibold capitalize" aria-live="polite">
+              <h3 className="mb-3 text-center text-[15px] font-semibold" aria-live="polite">
                 {mo.label}
               </h3>
               <div className={`grid grid-cols-7 text-center text-[12px] ${dark ? "text-ash" : "text-foggy"}`} aria-hidden="true">
@@ -125,7 +124,7 @@ export function DateRangePicker({
                   const isStart = d === value.from;
                   const isEnd = d === value.to;
                   const inRange = value.from && value.to && d > value.from && d < value.to;
-                  const label = new Intl.DateTimeFormat(TAG[locale] ?? locale, { weekday: "long", day: "numeric", month: "long" }).format(parseDay(d));
+                  const label = dayLabel(d, locale);
                   const status = kind === "BOOKED" ? td("legendBooked") : kind === "BLOCKED" ? td("legendBlocked") : "";
                   let cls = "relative mx-auto flex size-11 items-center justify-center rounded-full text-[14px] num transition-colors ";
                   if (isStart || isEnd) cls += dark ? "bg-cobalt text-white" : "bg-hof text-white";

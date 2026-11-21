@@ -21,9 +21,10 @@ function SectionHead({ id, title, href, more }: { id: string; title: string; hre
   );
 }
 
-function Tile({ l, locale, sizes }: { l: ListingCard; locale: string; sizes: string }) {
+function Tile({ l, locale, sizes, shape = "square" }: { l: ListingCard; locale: string; sizes: string; shape?: "square" | "wide" | "fill" }) {
+  const box = shape === "wide" ? "col-span-2 aspect-[2/1]" : shape === "fill" ? "col-span-2 aspect-square md:aspect-auto md:h-full" : "aspect-square";
   return (
-    <Link href={`/listing/${l.id}`} className="group relative block aspect-square overflow-hidden rounded-pillow bg-[#665a54]">
+    <Link href={`/listing/${l.id}`} className={`group relative block overflow-hidden rounded-pillow bg-[#665a54] ${box}`}>
       <Photo src={l.coverUrl} alt="" fill sizes={sizes} className="object-cover transition-transform duration-700 group-hover:scale-[1.04]" />
       <span className="absolute inset-x-3 bottom-3 flex max-w-[calc(100%-24px)] flex-col rounded-[12px] bg-white/85 px-3 py-2 backdrop-blur-sm">
         <span className="truncate text-[14px] font-semibold tracking-[-0.014em]">{l.title}</span>
@@ -38,26 +39,28 @@ function Tile({ l, locale, sizes }: { l: ListingCard; locale: string; sizes: str
 /** "Category band": a 28px-radius hero image (≈60%) with the category name in white display type + a 2×2 tile grid. */
 export function CategoryBand({ category, items, locale, flip }: { category: Category; items: ListingCard[]; locale: string; flip: boolean }) {
   const t = useTranslations("Home");
-  const [hero, ...rest] = items;
+  const [hero, ...more] = items;
   if (!hero) return null;
+  const rest = more.slice(0, 4);
+  const shapeOf = (i: number) => (rest.length === 1 ? "fill" : rest.length === 2 || (rest.length === 3 && i === 0) ? "wide" : "square");
   const id = `band-${category.slug}`;
   return (
     <section aria-labelledby={id}>
       <SectionHead id={id} title={catName(category, locale)} href={`/c/${category.slug}`} more={t("seeAll")} />
-      <div className={`grid gap-3 md:grid-cols-[1.5fr_1fr] ${flip ? "md:[&>*:first-child]:order-2" : ""}`}>
+      <div className={`grid gap-3 ${flip ? "md:grid-cols-[1fr_1.5fr] md:[&>*:first-child]:order-2" : "md:grid-cols-[1.5fr_1fr]"}`}>
         <Link href={`/c/${category.slug}`} className="group relative block min-h-[280px] overflow-hidden rounded-pillow bg-[#665a54] md:min-h-0">
           <Photo src={hero.coverUrl} alt="" fill sizes="(min-width: 768px) 60vw, 100vw" className="object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
           <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/0 to-black/0" />
           <span className="absolute left-6 top-5 max-w-[80%] text-white">
-            <span className="block text-[34px] font-semibold leading-[1.05] tracking-[-0.045em] sm:text-[44px]">{catName(category, locale)}</span>
+            <span className="block text-[26px] font-semibold leading-[1.05] tracking-[-0.045em] sm:text-[32px]">{catName(category, locale)}</span>
             <span className="mt-2 block text-[14px] opacity-90">
               {t("cityCount", { count: category.listingCount })}
             </span>
           </span>
         </Link>
         <div className="grid grid-cols-2 gap-3">
-          {rest.slice(0, 4).map((l) => (
-            <Tile key={l.id} l={l} locale={locale} sizes="(min-width: 768px) 20vw, 50vw" />
+          {rest.map((l, i) => (
+            <Tile key={l.id} l={l} locale={locale} shape={shapeOf(i)} sizes={shapeOf(i) === "square" ? "(min-width: 768px) 20vw, 50vw" : "(min-width: 768px) 40vw, 100vw"} />
           ))}
         </div>
       </div>

@@ -7,6 +7,16 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 // JWT only: no default in-memory user / generated password.
 @SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
 public class KiraylaApplication {
+    /**
+     * Kirayla is a Baku marketplace: "today" for bookings and every timestamp the API returns are
+     * Baku wall-clock time, whatever zone the host runs in (Render containers run in UTC).
+     */
+    public static final String ZONE = "Asia/Baku";
+
+    static {
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone(ZONE));
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(KiraylaApplication.class, args);
     }

@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 /** Every flow from the brief, end to end, against the real API + seed. Fails on any console error. */
 
+const API = process.env.API_URL ?? "http://localhost:8080";
 const run = Date.now().toString(36);
 const renter = { name: "Test Kirayəçi", email: `e2e-${run}@kirayla.test`, password: "Sinaq12345" };
 const title = `E2E dron ${run}`;
@@ -78,6 +79,72 @@ test.describe.serial("Kirayla flows", () => {
     expect(errors).toEqual([]);
   });
 
+  test("filters: city, price ceiling and free dates narrow the results", async ({ page, request }) => {
+    const errors = watchConsole(page);
+    await page.goto("/az/search");
+    const side = page.getByRole("complementary", { name: "Filtrlər" });
+    await side.getByLabel("Şəhər").selectOption("Gəncə");
+    await side.getByLabel("Maks").fill("15");
+    await side.getByLabel("Başlanğıc").fill(iso(40));
+    await side.getByLabel("Bitmə").fill(iso(42));
+    await side.getByRole("button", { name: "Nəticələri göstər" }).click();
+    await expect(page).toHaveURL(/city=G/);
+    await expect(page).toHaveURL(/maxPrice=15/);
+    await expect(page).toHaveURL(new RegExp(`from=${iso(40)}.*to=${iso(42)}`));
+    const cards = page.locator("main article");
+    await expect(cards.first()).toBeVisible();
+    const query = `city=${encodeURIComponent("Gəncə")}&maxPrice=15&from=${iso(40)}&to=${iso(42)}&size=12`;
+    const live = await (await request.get(`${API}/api/listings?${query}`)).json();
+    expect(live.totalElements).toBeGreaterThan(0);
+    await expect(cards).toHaveCount(Math.min(12, live.totalElements));
+    for (const text of await cards.allInnerTexts()) {
+      expect(text).toContain("Gəncə");
+      expect(Number(/(\d+(?:[.,]\d+)?)\s*₼/.exec(text)![1].replace(",", "."))).toBeLessThanOrEqual(15);
+    }
+    // sorting is done by the API: cheapest first
+    await page.getByLabel("Sırala").selectOption("price_asc");
+    await expect(page).toHaveURL(/sort=price_asc/);
+    const sorted = await (await request.get(`${API}/api/listings?${query}&sort=price_asc`)).json();
+    await expect(cards.first().getByRole("link")).toHaveText(sorted.content[0].title);
+    expect(errors).toEqual([]);
+  });
+
+  test("wishlist: save from the listing, see it, remove it", async ({ page }) => {
+    const errors = watchConsole(page);
+    await login(page, renter.email, renter.password);
+    await page.goto("/az/listing/3");
+    await page.getByRole("button", { name: "Seçilmişlərə əlavə et" }).click();
+    await expect(page.getByText("Seçilmişlərə əlavə olundu")).toBeVisible();
+    await page.goto("/az/wishlist");
+    await expect(page.locator("main article")).toHaveCount(1);
+    await page.getByRole("button", { name: "Seçilmişlərdən çıxar" }).click();
+    await expect(page.getByText("Bəyəndiyin elanları ürək işarəsi ilə yadda saxla.")).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test("messages: renter writes to the host, host answers", async ({ page }) => {
+    const errors = watchConsole(page);
+    const hello = `Salam! Sabah boşdur? (${run})`;
+    const reply = `Bəli, boşdur. (${run})`;
+    await login(page, renter.email, renter.password);
+    await page.goto("/az/listing/5");
+    await page.getByRole("button", { name: "Ev sahibinə yaz" }).click();
+    await page.getByRole("dialog").getByLabel("Mesaj").fill(hello);
+    await page.getByRole("dialog").getByRole("button", { name: "Göndər" }).click();
+    await page.waitForURL(/\/messages\/\d+$/);
+    await expect(page.locator("p", { hasText: hello })).toBeVisible();
+
+    await logout(page);
+    await login(page, "rashad@kirayla.az");
+    await page.goto("/az/messages");
+    await page.getByRole("link", { name: new RegExp(renter.name) }).click();
+    await expect(page.locator("p", { hasText: hello })).toBeVisible();
+    await page.getByLabel("Mesaj").fill(reply);
+    await page.getByRole("button", { name: "Göndər" }).click();
+    await expect(page.locator("p", { hasText: reply })).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
   test("renter books with the calendar; overlapping request is refused", async ({ page }) => {
     const errors = watchConsole(page);
     await login(page, renter.email, renter.password);
@@ -97,6 +164,13 @@ test.describe.serial("Kirayla flows", () => {
     await page.goto(`/az/checkout/5?from=${iso(0)}&to=${iso(1)}`);
     await page.getByRole("button", { name: "Sorğu göndər" }).click();
     await expect(page.getByText("Bu tarixlər artıq tutulub")).toBeVisible();
+
+    // …and a search for those days no longer offers the item
+    await page.goto(`/az/c/foto-video?from=${iso(0)}&to=${iso(1)}`);
+    await expect(page.locator("main article").first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Studiya işıq dəsti/ })).toHaveCount(0);
+    await page.goto("/az/c/foto-video");
+    await expect(page.getByRole("link", { name: /Studiya işıq dəsti/ })).toBeVisible();
     expect(errors.filter((e) => !e.includes("409"))).toEqual([]);
   });
 
@@ -133,6 +207,76 @@ test.describe.serial("Kirayla flows", () => {
     await page.getByRole("button", { name: "Gizlət" }).first().click();
     await expect(page.getByText("Demo admin yalnız oxuma rejimindədir")).toBeVisible();
     expect(errors.filter((e) => !e.includes("403"))).toEqual([]);
+  });
+
+  test("demo admin writes are refused by the API itself, not just the UI", async ({ request }) => {
+    const auth = await (await request.post(`${API}/api/auth/login`, { data: { email: "demo-admin@kirayla.az", password: "Demo1234!" } })).json();
+    const headers = { Authorization: `Bearer ${auth.accessToken}` };
+    expect((await request.get(`${API}/api/admin/stats`, { headers })).status()).toBe(200);
+    const writes: [string, string, unknown?][] = [
+      ["PATCH", "/api/admin/users/2", { blocked: true }],
+      ["PATCH", "/api/admin/listings/1", { status: "HIDDEN" }],
+      ["PATCH", "/api/admin/reports/1", { status: "RESOLVED" }],
+      ["POST", "/api/admin/categories", { slug: "x", nameAz: "x", nameEn: "x", icon: "camera", sortOrder: 99 }],
+      ["DELETE", "/api/admin/categories/1"],
+      ["PUT", "/api/users/me", { name: "Changed" }],
+      ["POST", "/api/bookings", { listingId: 1, startDate: iso(200), endDate: iso(201) }],
+      ["PUT", "/api/wishlist/1"],
+      ["DELETE", "/api/listings/1"],
+    ];
+    for (const [method, path, data] of writes) {
+      const res = await request.fetch(API + path, { method, headers, data });
+      expect(res.status(), `${method} ${path}`).toBe(403);
+      expect((await res.json()).code, `${method} ${path}`).toBe("DEMO_READ_ONLY");
+    }
+    // nothing changed
+    expect((await (await request.get(`${API}/api/listings/1`)).json()).status).toBe("ACTIVE");
+    // a normal user cannot reach admin endpoints at all, and neither can a guest
+    const user = await (await request.post(`${API}/api/auth/login`, { data: { email: "aysel@kirayla.az", password: "Demo1234!" } })).json();
+    expect((await request.get(`${API}/api/admin/stats`, { headers: { Authorization: `Bearer ${user.accessToken}` } })).status()).toBe(403);
+    expect((await request.get(`${API}/api/admin/stats`)).status()).toBe(401);
+  });
+
+  test("demo account buttons sign in with one click", async ({ page }) => {
+    const errors = watchConsole(page);
+    await page.goto("/az/login");
+    await page.getByRole("button", { name: /Kirayəçi — Aysel/ }).click();
+    await page.waitForURL(/\/az$/);
+    await logout(page);
+    await page.goto("/az/login");
+    await page.getByRole("button", { name: /Ev sahibi — Rəşad/ }).click();
+    await page.waitForURL(/\/host$/);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Rəşad");
+    expect(errors).toEqual([]);
+  });
+
+  test("embeddable by the portfolio only: CSP frame-ancestors, no X-Frame-Options", async ({ request }) => {
+    for (const path of ["/az", "/en/listing/1", "/az/admin", "/az/host", "/llms.txt"]) {
+      const res = await request.get(path);
+      expect(res.status(), path).toBe(200);
+      expect(res.headers()["content-security-policy"], path).toBe("frame-ancestors 'self' https://antiqa-portfolio.vercel.app https://antiqacode.vercel.app");
+      expect(res.headers()["x-frame-options"], path).toBeUndefined();
+    }
+  });
+
+  test("API unreachable: demo snapshot instead of a broken page; slow API falls back after ~8 s", async ({ page }) => {
+    test.setTimeout(90_000);
+    const errors = watchConsole(page);
+    await page.route(`${API}/**`, (route) => route.abort("connectionrefused"));
+    await page.goto("/az/c/kempinq");
+    await expect(page.getByText("Server oyanır")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("main article").first()).toBeVisible();
+    await page.unroute(`${API}/**`);
+
+    // cold start: the API accepts the request but does not answer — skeletons first, snapshot at 8 s
+    await page.route(`${API}/**`, () => {});
+    const t0 = Date.now();
+    await page.goto("/az/c/aletler");
+    await expect(page.locator("main article").first()).toBeVisible({ timeout: 20_000 });
+    expect(Date.now() - t0).toBeGreaterThan(7000);
+    await expect(page.getByText("Server oyanır")).toBeVisible();
+    // only the blocked requests themselves may be logged
+    expect(errors.filter((e) => !/ERR_CONNECTION_REFUSED|ERR_FAILED|Failed to load resource/.test(e))).toEqual([]);
   });
 
   test("real admin moderates a listing", async ({ page }) => {

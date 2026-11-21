@@ -66,7 +66,7 @@ export function DiscoveryRail() {
           <Wordmark size={22} />
         </Link>
         <div className="flex items-center gap-1">
-          <LangSwitch className="hidden text-ink sm:inline-flex" />
+          <LangSwitch className="text-ink max-sm:hidden" />
           <UserMenu />
         </div>
       </div>

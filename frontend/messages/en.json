@@ -23,6 +23,8 @@
     "error": "Something went wrong. Please try again in a moment.",
     "network": "Can't reach the server. Check your connection or try again shortly.",
     "demoMode": "The server is waking up — showing demo data for now. The page will refresh on its own.",
+    "demoOffline": "Demo mode: sample listings are shown. Sign-in, booking and messages work once the server is connected.",
+    "noApi": "The server is not connected in this demo yet, so sign-in and registration are off. You can still browse the listings.",
     "demoReadOnly": "The demo admin is read-only — changes are disabled in the public demo.",
     "deposit": "Deposit",
     "from": "From",
@@ -221,7 +223,7 @@
     "city": "City",
     "bio": "About",
     "saved": "Profile updated",
-    "member": "On Kirayla since {date}",
+    "member": "On <brand>Kirayla</brand> since {date}",
     "quick": "Shortcuts",
     "role_USER": "User",
     "role_ADMIN": "Admin"
@@ -229,7 +231,7 @@
   "Auth": {
     "loginTitle": "Welcome back",
     "loginSub": "Log in to see your rentals, messages and dashboard.",
-    "registerTitle": "Join Kirayla",
+    "registerTitle": "Join <brand>Kirayla</brand>",
     "registerSub": "One account to rent things and to rent out your own.",
     "name": "Full name",
     "email": "Email",
@@ -375,15 +377,15 @@
     "forbidden": "This section is for admins only."
   },
   "Footer": {
-    "about": "Kirayla is an open marketplace where people in Azerbaijan rent things to each other. A portfolio project: no real payments.",
+    "about": "<brand>Kirayla</brand> is an open marketplace where people in Azerbaijan rent things to each other. A portfolio project: no real payments.",
     "explore": "Explore",
     "host": "For hosts",
     "company": "Project",
     "howItWorks": "How it works",
     "api": "API docs",
     "source": "Source code",
-    "credits": "Photos: Wikimedia Commons authors (CC0 / CC BY / CC BY-SA), credited on each listing.",
-    "rights": "© {year} Kirayla. Portfolio demo."
+    "credits": "Photos: <brand>Wikimedia Commons</brand> authors (CC0 / CC BY / CC BY-SA), credited on each listing.",
+    "rights": "© {year} <brand>Kirayla</brand>. Portfolio demo."
   },
   "NotFound": {
     "title": "Page not found",
