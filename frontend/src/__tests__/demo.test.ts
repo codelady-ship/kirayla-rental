@@ -30,7 +30,7 @@ describe("cold-start demo snapshot", () => {
       const l = demoListing(id)!;
       expect(l.photos.length).toBeGreaterThan(0);
       for (const p of l.photos) {
-        expect(p.url).toMatch(/^https://thumb.wikimedia.org//);
+        expect(p.url.startsWith("https://thumb.wikimedia.org/")).toBe(true);
         expect(p.credit).toMatch(/(CC0|Public domain|CC BY)/);
       }
     }

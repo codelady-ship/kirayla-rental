@@ -9,7 +9,7 @@ describe("post-login redirect", () => {
   it("refuses open redirects", () => {
     expect(safeNext("https://evil.example", "/")).toBe("/");
     expect(safeNext("//evil.example", "/")).toBe("/");
-    expect(safeNext("/\evil.example", "/")).toBe("/");
+    expect(safeNext("/\\evil.example", "/")).toBe("/");
     expect(safeNext(null, "/host")).toBe("/host");
   });
 });
