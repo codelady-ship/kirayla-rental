@@ -80,7 +80,7 @@ export function Checkout({ id }: { id: number }) {
                 <p className="font-medium">{t("dates")}</p>
                 <p className="num text-foggy">{valid ? fmtRange(from!, to!, locale) : "—"}</p>
               </div>
-              <Link href={`/listing/${listing.id}#book`} className="inline-flex min-h-11 items-center font-medium underline underline-offset-2">
+              <Link href={`/listing/${listing.id}#book`} className="inline-flex min-h-11 min-w-11 items-center justify-end font-medium underline underline-offset-2">
                 {tc("edit")}
               </Link>
             </div>

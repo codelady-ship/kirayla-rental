@@ -157,7 +157,7 @@ export function HostOverview() {
             </Card>
           </div>
 
-          <Card title={t("incoming")} action={<Link href="/host/bookings" className="inline-flex min-h-11 items-center text-[14px] text-ash underline-offset-4 hover:text-ivory hover:underline">{t("filterAll")} →</Link>}>
+          <Card title={t("incoming")} action={<Link href="/host/bookings" className="inline-flex min-h-11 min-w-11 items-center justify-end text-[14px] text-ash underline-offset-4 hover:text-ivory hover:underline">{t("filterAll")} →</Link>}>
             {!incoming.data ? (
               <Spinner />
             ) : incoming.data.length === 0 ? (
@@ -256,7 +256,7 @@ export function HostListings() {
         <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {list.data.map((l) => (
             <li key={l.id} className="flex flex-col overflow-hidden rounded-[12px] bg-graphite">
-              <Link href={`/host/listings/${l.id}`} className="relative block aspect-[16/10] bg-obsidian">
+              <Link href={`/host/listings/${l.id}`} aria-label={l.title} className="relative block aspect-[16/10] bg-obsidian">
                 <Photo src={l.coverUrl} alt="" fill sizes="(min-width: 1280px) 30vw, (min-width: 768px) 45vw, 100vw" className="object-cover opacity-90" />
                 <span className="absolute left-3 top-3 flex gap-1.5">
                   {l.status !== "ACTIVE" && <span className="rounded-[40px] bg-onyx/85 px-2.5 py-1 text-[12px]">{t(`status_${l.status}`)}</span>}

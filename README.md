@@ -81,11 +81,13 @@ npm run dev
 
 ```bash
 cd backend && ./mvnw -B verify          # JUnit 5 · MockMvc · @DataJpaTest (28 tests)
-cd frontend && npm run lint && npm run typecheck && npm test   # ESLint · tsc · Vitest
+cd frontend && npm run lint && npm run typecheck && npm test   # ESLint · tsc · Vitest (12 tests)
 
 # end-to-end flows: API on :8080, then a production build of the web app on :3000
 cd frontend && NEXT_PUBLIC_API_URL=http://localhost:8080 npm run build && npm start &
-cd frontend && npx playwright test
+cd frontend && npx playwright test          # 14 flows; restart the API first for a fresh database
+# a build made WITHOUT NEXT_PUBLIC_API_URL must send no API request (start it, then:)
+cd frontend && node scripts/no-api-check.mjs
 # screenshots + layout audit (overflow, console errors, tap targets under 44 px)
 cd frontend && node scripts/screenshots.mjs ../docs/screenshots
 ```
