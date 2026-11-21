@@ -65,7 +65,7 @@ export function BookingWidget({ listing: initial }: { listing: ListingDetail }) 
   const field = "flex min-h-14 flex-col items-start justify-center px-3 py-2 text-left";
 
   return (
-    <div ref={box} id="book" className="rounded-card border border-deco bg-white p-6 shadow-[0_6px_16px_rgba(0,0,0,0.12)]">
+    <div ref={box} id="book" className="scroll-mt-28 rounded-card border border-deco bg-white p-4 shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <p>
           <span className="num text-[22px] font-semibold">{money(listing.dailyPrice, locale)}</span> <span className="text-foggy">/ {tc("perDay")}</span>
@@ -87,13 +87,13 @@ export function BookingWidget({ listing: initial }: { listing: ListingDetail }) 
       </div>
 
       {open && (
-        <div id={panelId} className="mt-3 rounded-lg border border-hair p-3">
-          <p className="mb-1 text-[14px] text-foggy">{t("pickHint")}</p>
+        <div id={panelId} className="mt-3 rounded-lg border border-hair p-1.5">
+          <p className="mb-1 px-1.5 pt-1.5 text-[14px] text-foggy">{t("pickHint")}</p>
           <DateRangePicker value={range} onChange={setRange} unavailable={listing.unavailable} />
-          <div className="mt-3 flex items-center justify-between">
-            <p className="text-[12px] text-foggy">{t("minMax", { min: listing.minDays, max: listing.maxDays })}</p>
+          <p className="mt-3 px-1.5 text-[12px] text-foggy">{t("minMax", { min: listing.minDays, max: listing.maxDays })}</p>
+          <div className="mt-1 flex items-center justify-end px-1.5 pb-1.5">
             <div className="flex gap-1">
-              <button type="button" onClick={() => setRange({ from: null, to: null })} className="min-h-11 rounded-lg px-3 text-[14px] font-medium underline underline-offset-2">
+              <button type="button" onClick={() => setRange({ from: null, to: null })} className="min-h-11 whitespace-nowrap rounded-lg px-3 text-[14px] font-medium underline underline-offset-2">
                 {t("clearDates")}
               </button>
               <button type="button" onClick={() => setOpen(false)} className="min-h-11 rounded-lg bg-hof px-4 text-[14px] font-medium text-white">

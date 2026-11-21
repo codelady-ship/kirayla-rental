@@ -17,12 +17,14 @@ export function Footer({ tone, locale }: { tone: "discovery" | "market"; locale:
   const t = useTranslations("Footer");
   const tn = useTranslations("Nav");
   const dark = tone === "discovery";
+  // same content edges as the header of the zone: 1200px on the home page, 1440px in the market
+  const wrap = dark ? "max-w-[1200px] lg:px-8" : "max-w-[1440px] lg:px-10";
   const head = `mb-2 text-[14px] font-semibold ${dark ? "text-white" : "text-hof"}`;
   const link = `inline-flex min-h-11 min-w-11 items-center text-[14px] transition-colors ${dark ? "text-[#d6d1ce] hover:text-white" : "text-foggy hover:text-hof"}`;
 
   return (
     <footer className={dark ? "bg-slate-ink text-[#d6d1ce]" : "border-t border-hair bg-faint text-foggy"}>
-      <div className="mx-auto grid max-w-[1200px] gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr] lg:px-8">
+      <div className={`mx-auto grid gap-10 px-4 py-14 sm:px-6 md:grid-cols-[1.4fr_1fr_1fr_1fr] ${wrap}`}>
         <div className="max-w-sm">
           <Wordmark zone={dark ? "discovery" : "market"} size={26} className={dark ? "text-white" : "text-hof"} />
           <p className="mt-4 text-[14px] leading-relaxed">{t.rich("about", { brand })}</p>
@@ -83,7 +85,7 @@ export function Footer({ tone, locale }: { tone: "discovery" | "market"; locale:
         </div>
       </div>
       <div className={`border-t ${dark ? "border-white/10" : "border-hair"}`}>
-        <div className="mx-auto flex max-w-[1200px] flex-col gap-2 px-4 py-6 text-[13px] sm:px-6 md:flex-row md:justify-between lg:px-8">
+        <div className={`mx-auto flex flex-col gap-2 px-4 py-6 text-[13px] sm:px-6 md:flex-row md:justify-between ${wrap}`}>
           <p>{t.rich("rights", { year: new Date().getFullYear(), brand })}</p>
           <p className="max-w-xl md:text-right">{t.rich("credits", { brand })}</p>
         </div>

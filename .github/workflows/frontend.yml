@@ -27,10 +27,19 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
-      - run: npm run build
+      # Built exactly like a deploy made before the API exists: NEXT_PUBLIC_API_URL is NOT set.
+      - name: Build without an API
+        run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: http://localhost:8080
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      - name: No API configured → no API calls, demo snapshot only
+        run: |
+          npx playwright install --with-deps chromium
+          nohup npm start > web.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://localhost:3000/az > /dev/null && break; sleep 2; done
+          node scripts/no-api-check.mjs
+      - if: failure()
+        run: tail -n 100 web.log
 
   e2e:
     runs-on: ubuntu-latest

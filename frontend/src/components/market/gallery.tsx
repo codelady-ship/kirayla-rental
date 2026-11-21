@@ -37,6 +37,9 @@ export function Gallery({ photos, title }: { photos: P[]; title: string }) {
         <div
           ref={strip}
           className="flex snap-x snap-mandatory overflow-x-auto scrollbar-none"
+          tabIndex={0}
+          role="group"
+          aria-label={t("gallery")}
           onScroll={(e) => setIdx(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
         >
           {(photos.length ? photos : [null]).map((p, i) => (

@@ -237,6 +237,8 @@
     "email": "Email",
     "password": "Password",
     "passwordHint": "At least 8 characters",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "city": "City",
     "submitLogin": "Log in",
     "submitRegister": "Create account",

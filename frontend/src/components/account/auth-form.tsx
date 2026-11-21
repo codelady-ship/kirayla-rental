@@ -133,8 +133,7 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
               <button
                 type="button"
                 onClick={() => setShow((s) => !s)}
-                aria-label={t("password")}
-                aria-pressed={show}
+                aria-label={show ? t("hidePassword") : t("showPassword")}
                 className="absolute right-1 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center text-foggy"
               >
                 <Icon name={show ? "eyeOff" : "eye"} size={18} />

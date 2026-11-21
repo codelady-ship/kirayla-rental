@@ -87,7 +87,7 @@ export function Trips() {
 
   const row = (b: Booking) => (
     <li key={b.id} className="grid gap-4 border-b border-hair py-6 sm:grid-cols-[132px_1fr_auto] sm:items-center">
-      <Link href={`/listing/${b.listing.id}`} className="relative block aspect-[4/3] w-full overflow-hidden rounded-card bg-deco sm:aspect-square sm:w-[132px]">
+      <Link href={`/listing/${b.listing.id}`} tabIndex={-1} aria-hidden="true" className="relative block aspect-[4/3] w-full overflow-hidden rounded-card bg-deco sm:aspect-square sm:w-[132px]">
         <Photo src={b.listing.coverUrl} alt="" fill sizes="(min-width: 640px) 132px, 100vw" className="object-cover" />
       </Link>
       <div className="min-w-0">

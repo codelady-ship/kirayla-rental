@@ -237,6 +237,8 @@
     "email": "E-poçt",
     "password": "Şifrə",
     "passwordHint": "Ən azı 8 simvol",
+    "showPassword": "Şifrəni göstər",
+    "hidePassword": "Şifrəni gizlət",
     "city": "Şəhər",
     "submitLogin": "Daxil ol",
     "submitRegister": "Hesab yarat",

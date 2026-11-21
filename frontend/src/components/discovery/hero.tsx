@@ -28,7 +28,7 @@ function FloatCard({ l, spot, locale }: { l: ListingCard; spot: (typeof SPOTS)[n
     top: spot.t,
     width: `calc(${spot.w}px * var(--k))`,
     zIndex: spot.z,
-    "--r": `${spot.r}deg`,
+    rotate: `${spot.r}deg`,
     animationDelay: `${spot.d}s`,
   } as CSSProperties;
   return (

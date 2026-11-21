@@ -156,7 +156,7 @@ export function AdminUsers() {
                     <Avatar name={u.name} size={36} className="!bg-obsidian" />
                     <div className="min-w-0">
                       <p className="truncate text-ivory">{u.name}</p>
-                      <p className="truncate text-[12px] text-ash">{u.email}</p>
+                      <p className="truncate text-[12px] text-ash" translate="no">{u.email}</p>
                     </div>
                   </div>
                 </td>

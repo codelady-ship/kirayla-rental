@@ -132,22 +132,22 @@ export function ListingView({ listing, demo }: { listing: ListingDetail; demo: b
               <h2 id="details" className="mb-5 text-[22px] font-medium tracking-[-0.02em]">
                 {t("details")}
               </h2>
-              <dl className="grid gap-5 sm:grid-cols-2">
+              <ul className="grid gap-5 sm:grid-cols-2">
                 {[
                   ["sparkle", t("condition"), t(conditionKey)],
                   ["calendar", t("rentalTerm"), t("termValue", { min: listing.minDays, max: listing.maxDays })],
                   ["pin", t("location"), `${listing.city}${listing.district ? `, ${listing.district}` : ""}`],
                   ["shield", tc("deposit"), money(listing.deposit, locale)],
                 ].map(([icon, k, v]) => (
-                  <div key={k} className="flex gap-4">
+                  <li key={k} className="flex gap-4">
                     <Icon name={icon} size={24} strokeWidth={1.4} className="mt-0.5 shrink-0" />
                     <div>
-                      <dt className="font-medium">{k}</dt>
-                      <dd className="text-foggy">{v}</dd>
+                      <p className="font-medium">{k}</p>
+                      <p className="text-foggy">{v}</p>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </dl>
+              </ul>
             </section>
 
             <section aria-labelledby="reviews" className="border-b border-hair py-8">
@@ -168,7 +168,7 @@ export function ListingView({ listing, demo }: { listing: ListingDetail; demo: b
                           <p className="text-[14px] text-foggy">{fmtDate(r.createdAt, locale, { month: "long", year: "numeric" })}</p>
                         </div>
                       </div>
-                      <p className="mt-2 flex gap-0.5" aria-label={tc("reviews", { count: 1 }) + `: ${r.rating}/5`}>
+                      <p className="mt-2 flex gap-0.5" role="img" aria-label={`${r.rating} / 5`}>
                         {Array.from({ length: 5 }, (_, i) => (
                           <Icon key={i} name="star" size={11} fill={i < r.rating ? "currentColor" : "#dddddd"} strokeWidth={0} />
                         ))}
@@ -192,22 +192,22 @@ export function ListingView({ listing, demo }: { listing: ListingDetail; demo: b
                       <p className="mt-3 text-[22px] font-semibold leading-tight">{listing.host.name.split(" ")[0]}</p>
                       <p className="text-[13px] text-foggy">{listing.host.city}</p>
                     </div>
-                    <dl className="flex-1 divide-y divide-hair text-[12px]">
+                    <div className="flex-1 divide-y divide-hair text-[12px]">
                       <div className="pb-3">
-                        <dd className="num text-[20px] font-semibold">{listing.host.reviewCount}</dd>
-                        <dt>{t("reviewsTitle")}</dt>
+                        <p className="num text-[20px] font-semibold">{listing.host.reviewCount}</p>
+                        <p>{t("reviewsTitle")}</p>
                       </div>
                       <div className="py-3">
-                        <dd className="num flex items-center gap-1 text-[20px] font-semibold">
+                        <p className="num flex items-center gap-1 text-[20px] font-semibold">
                           {listing.host.ratingAvg ? listing.host.ratingAvg.toFixed(1) : "—"} <Icon name="star" size={12} fill="currentColor" strokeWidth={0} />
-                        </dd>
-                        <dt>{locale === "en" ? "Rating" : "Reytinq"}</dt>
+                        </p>
+                        <p>{locale === "en" ? "Rating" : "Reytinq"}</p>
                       </div>
                       <div className="pt-3">
-                        <dd className="num text-[20px] font-semibold">{listing.host.listingCount}</dd>
-                        <dt>{t("hostListings", { count: listing.host.listingCount }).replace(/^\d+\s/, "")}</dt>
+                        <p className="num text-[20px] font-semibold">{listing.host.listingCount}</p>
+                        <p>{t("hostListings", { count: listing.host.listingCount }).replace(/^\d+\s/, "")}</p>
                       </div>
-                    </dl>
+                    </div>
                   </div>
                 </div>
                 <div>

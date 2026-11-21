@@ -10,6 +10,9 @@ const pages = ["/az", "/en", "/az/c/kempinq", "/az/search?q=dron", "/az/listing/
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
 const page = await ctx.newPage();
+// seed photos come from Wikimedia Commons: stub them so the check does not depend on a third-party host
+const PIXEL = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+await page.route((url) => url.pathname.startsWith("/_next/image") || url.hostname.endsWith("wikimedia.org"), (route) => route.fulfill({ status: 200, contentType: "image/png", body: PIXEL }));
 const foreign = [];
 const errors = [];
 page.on("request", (r) => {

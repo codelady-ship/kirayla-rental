@@ -16,7 +16,7 @@ function monthDays(year: number, month: number) {
 }
 
 /**
- * Two-month range calendar (one month on phones). Past days and unavailable days are disabled;
+ * Range calendar: two months when its container is at least 600px wide, otherwise one. Past days and unavailable days are disabled;
  * a range can never span an unavailable day. Arrow keys move between days (roving tabindex).
  */
 export function DateRangePicker({
@@ -81,7 +81,16 @@ export function DateRangePicker({
     if (nd < firstShown) setView((v) => ({ y: new Date(v.y, v.m - 1, 1).getFullYear(), m: new Date(v.y, v.m - 1, 1).getMonth() }));
     if (nd > lastShown) setView((v) => ({ y: new Date(v.y, v.m + 1, 1).getFullYear(), m: new Date(v.y, v.m + 1, 1).getMonth() }));
     setFocus(next);
-    requestAnimationFrame(() => grid.current?.querySelector<HTMLButtonElement>(`[data-day="${next}"]`)?.focus());
+    const find = () => grid.current?.querySelector<HTMLButtonElement>(`[data-day="${next}"]`);
+    requestAnimationFrame(() => {
+      const el = find();
+      if (el && el.offsetParent !== null) return el.focus();
+      // the day sits in the second month, which is not displayed in a narrow container: page forward to it
+      if (el) {
+        setView((v) => ({ y: new Date(v.y, v.m + 1, 1).getFullYear(), m: new Date(v.y, v.m + 1, 1).getMonth() }));
+        requestAnimationFrame(() => requestAnimationFrame(() => find()?.focus()));
+      }
+    });
   };
 
   const dark = tone === "dark";
@@ -90,7 +99,7 @@ export function DateRangePicker({
   const shift = (k: number) => setView((v) => ({ y: new Date(v.y, v.m + k, 1).getFullYear(), m: new Date(v.y, v.m + k, 1).getMonth() }));
 
   return (
-    <div ref={grid} className="select-none">
+    <div ref={grid} className="@container select-none">
       <div className="mb-2 flex items-center justify-between">
         <button type="button" className={nav} onClick={() => shift(-1)} disabled={!canPrev} aria-label={t("prevMonth")}>
           <Icon name="chevronLeft" size={18} />
@@ -99,11 +108,11 @@ export function DateRangePicker({
           <Icon name="chevronRight" size={18} />
         </button>
       </div>
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-8 @[600px]:grid-cols-2">
         {months.map((mo, idx) => {
           const { lead, days } = monthDays(mo.y, mo.m);
           return (
-            <div key={mo.label} className={idx === 1 ? "hidden md:block" : ""}>
+            <div key={mo.label} className={idx === 1 ? "hidden @[600px]:block" : ""}>
               <h3 className="mb-3 text-center text-[15px] font-semibold" aria-live="polite">
                 {mo.label}
               </h3>
@@ -126,7 +135,7 @@ export function DateRangePicker({
                   const inRange = value.from && value.to && d > value.from && d < value.to;
                   const label = dayLabel(d, locale);
                   const status = kind === "BOOKED" ? td("legendBooked") : kind === "BLOCKED" ? td("legendBlocked") : "";
-                  let cls = "relative mx-auto flex size-11 items-center justify-center rounded-full text-[14px] num transition-colors ";
+                  let cls = "relative mx-auto flex aspect-square w-full max-w-11 items-center justify-center rounded-full text-[14px] num transition-colors ";
                   if (isStart || isEnd) cls += dark ? "bg-cobalt text-white" : "bg-hof text-white";
                   else if (inRange) cls += dark ? "bg-cobalt/25 text-ivory" : "bg-faint text-hof";
                   else if (showKinds && kind === "BOOKED") cls += "bg-[#3b3f6b] text-ivory";

@@ -13,8 +13,12 @@ function iso(offset: number) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+// Seed photos are hot-linked from Wikimedia Commons; the tests must not depend on a third-party host being up.
+const PIXEL = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64");
+
 function watchConsole(page: Page) {
   const errors: string[] = [];
+  void page.route((url) => url.pathname.startsWith("/_next/image") || url.hostname.endsWith("wikimedia.org"), (route) => route.fulfill({ status: 200, contentType: "image/png", body: PIXEL }));
   page.on("console", (m) => {
     if (m.type() === "error") errors.push(m.text());
   });
@@ -26,7 +30,7 @@ function watchConsole(page: Page) {
 async function login(page: Page, email: string, password = "Demo1234!") {
   await page.goto("/az/login");
   await page.getByLabel("E-poçt").fill(email);
-  await page.getByLabel("Şifrə", { exact: true }).fill(password);
+  await page.locator("#f-password").fill(password);
   await page.getByRole("button", { name: "Daxil ol", exact: true }).click();
   await page.waitForURL((u) => !u.pathname.endsWith("/login"));
 }
@@ -53,7 +57,7 @@ test.describe.serial("Kirayla flows", () => {
     await page.goto("/az/register");
     await page.getByLabel("Ad, soyad").fill(renter.name);
     await page.getByLabel("E-poçt").fill(renter.email);
-    await page.getByLabel("Şifrə", { exact: true }).fill(renter.password);
+    await page.locator("#f-password").fill(renter.password);
     await page.getByRole("button", { name: "Hesab yarat" }).click();
     await page.waitForURL(/\/az$/);
 

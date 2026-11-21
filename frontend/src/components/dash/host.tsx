@@ -163,7 +163,7 @@ export function HostOverview() {
             ) : incoming.data.length === 0 ? (
               <Empty>{t("noRequests")}</Empty>
             ) : (
-              <Table head={[t("renter"), t("listing"), t("dates"), t("amount"), t("status"), ""]} minWidth={860}>
+              <Table stack head={[t("renter"), t("listing"), t("dates"), t("amount"), t("status"), ""]} minWidth={860}>
                 {incoming.data.map((b) => (
                   <RequestRow key={b.id} b={b} onAction={run} busy={busy === b.id} />
                 ))}
@@ -206,7 +206,7 @@ export function HostBookings() {
         ) : list.data.length === 0 ? (
           <Empty>{t("noRequests")}</Empty>
         ) : (
-          <Table head={[t("renter"), t("listing"), t("dates"), t("amount"), t("status"), ""]} minWidth={900}>
+          <Table stack head={[t("renter"), t("listing"), t("dates"), t("amount"), t("status"), ""]} minWidth={900}>
             {list.data.map((b) => (
               <RequestRow key={b.id} b={b} onAction={run} busy={busy === b.id} />
             ))}
