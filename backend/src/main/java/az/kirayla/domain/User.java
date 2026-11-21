@@ -16,6 +16,8 @@ public class User {
     @Enumerated(EnumType.STRING) @Column(nullable = false) private Role role = Role.USER;
     @Column(nullable = false) private boolean enabled = true;
     @Column(name = "demo_read_only", nullable = false) private boolean demoReadOnly;
+    /** Public demo renter / host: see az.kirayla.demo.DemoGuard. */
+    @Column(name = "demo_protected", nullable = false) private boolean demoProtected;
     @Column(name = "created_at", nullable = false) private LocalDateTime createdAt = LocalDateTime.now();
 
     public Long getId() { return id; }
@@ -38,6 +40,8 @@ public class User {
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
     public boolean isDemoReadOnly() { return demoReadOnly; }
     public void setDemoReadOnly(boolean demoReadOnly) { this.demoReadOnly = demoReadOnly; }
+    public boolean isDemoProtected() { return demoProtected; }
+    public void setDemoProtected(boolean demoProtected) { this.demoProtected = demoProtected; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

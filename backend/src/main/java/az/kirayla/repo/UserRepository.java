@@ -22,5 +22,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
             """)
     Page<User> search(@Param("q") String q, Pageable pageable);
 
+    /** Same list, matched only on fields that are shown unmasked (used for the read-only demo admin). */
+    @Query("""
+            select u from User u
+            where lower(u.fullName) like :q or lower(coalesce(u.city, '')) like :q
+            """)
+    Page<User> searchPublicFields(@Param("q") String q, Pageable pageable);
+
     List<User> findByCreatedAtAfter(LocalDateTime after);
 }

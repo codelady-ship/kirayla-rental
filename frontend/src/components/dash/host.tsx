@@ -9,7 +9,7 @@ import type { Booking, BookingStatus, Earnings, HostListing } from "@/lib/types"
 import { Icon } from "../icons";
 import { useApiErrorToast, useAuth, useToast } from "../providers";
 import { Avatar, Photo, Spinner } from "../ui";
-import { BarChart, BOOKING_TONE, Card, DButton, Empty, PageHead, Pill, Stat, Table } from "./kit";
+import { BarChart, BOOKING_TONE, Card, DButton, Empty, PageHead, Pill, Stat } from "./kit";
 
 /** Small loader for dashboard reads: data + reload, errors surface as toasts. */
 export function useDash<T>(path: string | null) {
@@ -47,60 +47,70 @@ function useBookingAction(after: () => void) {
   return { run, busy };
 }
 
-function RequestRow({ b, onAction, busy, compact = false }: { b: Booking; onAction: (b: Booking, a: "accept" | "decline" | "complete") => void; busy: boolean; compact?: boolean }) {
+/**
+ * Booking requests as a list, not a table: the row lays itself out from the width of its own card
+ * (container queries), so Accept / Decline are always fully on screen.
+ *   < 560px  : everything stacked
+ *   560–899px: renter | listing, actions on a second line
+ *   ≥ 900px  : renter | listing | status + actions on one line
+ */
+function RequestList({ items, onAction, busyId }: { items: Booking[]; onAction: (b: Booking, a: "accept" | "decline" | "complete") => void; busyId: number | null }) {
+  return (
+    <ul className="@container -mx-6 -mb-2 sm:-mx-8">
+      {items.map((b) => (
+        <RequestRow key={b.id} b={b} onAction={onAction} busy={busyId === b.id} />
+      ))}
+    </ul>
+  );
+}
+
+function RequestRow({ b, onAction, busy }: { b: Booking; onAction: (b: Booking, a: "accept" | "decline" | "complete") => void; busy: boolean }) {
   const t = useTranslations("Dash");
   const tb = useTranslations("Booking");
   const tc = useTranslations("Common");
   const locale = useLocale();
   const canComplete = b.status === "ACCEPTED" && b.startDate <= today();
   return (
-    <tr>
-      <td>
-        <div className="flex items-center gap-3">
-          <Avatar name={b.renter.name} src={b.renter.avatarUrl} size={36} className="!bg-obsidian" />
-          <div className="min-w-0">
-            <p className="truncate text-ivory">{b.renter.name}</p>
-            {!compact && b.message && <p className="max-w-[260px] truncate text-[12px] text-ash">“{b.message}”</p>}
-          </div>
+    <li className="grid gap-x-6 gap-y-2 border-b border-slate-line/60 px-6 py-4 last:border-0 sm:px-8 @[560px]:grid-cols-2 @[900px]:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_auto] @[900px]:items-center">
+      <div className="flex min-w-0 items-center gap-3">
+        <Avatar name={b.renter.name} src={b.renter.avatarUrl} size={36} className="!bg-obsidian" />
+        <div className="min-w-0">
+          <p className="truncate text-ivory">{b.renter.name}</p>
+          {b.message && <p className="truncate text-[12px] text-ash">“{b.message}”</p>}
         </div>
-      </td>
-      <td className="max-w-[220px]">
-        <Link href={`/listing/${b.listing.id}`} className="block truncate py-3 text-ivory hover:underline">
+      </div>
+      <div className="min-w-0 text-[14px]">
+        <Link href={`/listing/${b.listing.id}`} className="block truncate py-1.5 text-ivory hover:underline">
           {b.listing.title}
         </Link>
-      </td>
-      <td className="num whitespace-nowrap text-ash">
-        {fmtRange(b.startDate, b.endDate, locale)} · {tc("day", { count: b.days })}
-      </td>
-      <td className="num whitespace-nowrap">{money(b.rentalTotal, locale)}</td>
-      <td>
+        <p className="num truncate text-ash">
+          {fmtRange(b.startDate, b.endDate, locale)} · {tc("day", { count: b.days })} · <span className="text-ivory">{money(b.rentalTotal, locale)}</span>
+        </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-2 @[560px]:col-span-2 @[900px]:col-span-1 @[900px]:flex-nowrap @[900px]:justify-end">
         <Pill tone={BOOKING_TONE[b.status]}>{tb(`status_${b.status}`)}</Pill>
-      </td>
-      <td>
-        <div className="flex justify-end gap-2">
-          {b.status === "REQUESTED" && (
-            <>
-              <DButton variant="ghost" disabled={busy} onClick={() => onAction(b, "accept")} aria-label={`${t("accept")}: ${b.renter.name}, ${b.listing.title}`}>
-                <Icon name="check" size={16} /> {t("accept")}
-              </DButton>
-              <DButton variant="quiet" disabled={busy} onClick={() => onAction(b, "decline")} aria-label={`${t("decline")}: ${b.renter.name}, ${b.listing.title}`}>
-                {t("decline")}
-              </DButton>
-            </>
-          )}
-          {canComplete && (
-            <DButton variant="ghost" disabled={busy} onClick={() => onAction(b, "complete")}>
-              {t("complete")}
+        {b.status === "REQUESTED" && (
+          <>
+            <DButton variant="ghost" disabled={busy} onClick={() => onAction(b, "accept")} aria-label={`${t("accept")}: ${b.renter.name}, ${b.listing.title}`}>
+              <Icon name="check" size={16} /> {t("accept")}
             </DButton>
-          )}
-          {b.conversationId && (
-            <Link href={`/messages/${b.conversationId}`} aria-label={`${tc("send")}: ${b.renter.name}`} className="flex size-11 shrink-0 items-center justify-center rounded-full text-ash hover:bg-obsidian hover:text-ivory">
-              <Icon name="message" size={18} />
-            </Link>
-          )}
-        </div>
-      </td>
-    </tr>
+            <DButton variant="quiet" disabled={busy} onClick={() => onAction(b, "decline")} aria-label={`${t("decline")}: ${b.renter.name}, ${b.listing.title}`}>
+              {t("decline")}
+            </DButton>
+          </>
+        )}
+        {canComplete && (
+          <DButton variant="ghost" disabled={busy} onClick={() => onAction(b, "complete")}>
+            {t("complete")}
+          </DButton>
+        )}
+        {b.conversationId && (
+          <Link href={`/messages/${b.conversationId}`} aria-label={`${tc("send")}: ${b.renter.name}`} className="flex size-11 shrink-0 items-center justify-center rounded-full text-ash hover:bg-obsidian hover:text-ivory">
+            <Icon name="message" size={18} />
+          </Link>
+        )}
+      </div>
+    </li>
   );
 }
 
@@ -163,11 +173,7 @@ export function HostOverview() {
             ) : incoming.data.length === 0 ? (
               <Empty>{t("noRequests")}</Empty>
             ) : (
-              <Table stack head={[t("renter"), t("listing"), t("dates"), t("amount"), t("status"), ""]} minWidth={860}>
-                {incoming.data.map((b) => (
-                  <RequestRow key={b.id} b={b} onAction={run} busy={busy === b.id} />
-                ))}
-              </Table>
+              <RequestList items={incoming.data} onAction={run} busyId={busy} />
             )}
           </Card>
         </div>
@@ -206,11 +212,7 @@ export function HostBookings() {
         ) : list.data.length === 0 ? (
           <Empty>{t("noRequests")}</Empty>
         ) : (
-          <Table stack head={[t("renter"), t("listing"), t("dates"), t("amount"), t("status"), ""]} minWidth={900}>
-            {list.data.map((b) => (
-              <RequestRow key={b.id} b={b} onAction={run} busy={busy === b.id} />
-            ))}
-          </Table>
+          <RequestList items={list.data} onAction={run} busyId={busy} />
         )}
       </Card>
     </>

@@ -11,3 +11,9 @@ spring:
 logging:
   level:
     root: INFO
+
+# Behind Render's proxy. "native" = Tomcat's RemoteIpValve: the client address is the right-most
+# X-Forwarded-For entry that is not one of our own proxies (private ranges by default), so a header the
+# client sends itself is never believed. The login rate limit keys on that address.
+server:
+  forward-headers-strategy: native

@@ -2,6 +2,7 @@ package az.kirayla.service;
 
 import az.kirayla.common.ApiException;
 import az.kirayla.common.PageResponse;
+import az.kirayla.demo.DemoGuard;
 import az.kirayla.domain.*;
 import az.kirayla.repo.*;
 import az.kirayla.security.AuthUser;
@@ -110,6 +111,7 @@ public class ListingService {
     @Transactional
     public ListingDetail update(Long id, ListingRequest req) {
         Listing l = owned(id);
+        DemoGuard.changeListing(id);
         apply(l, req);
         l.setUpdatedAt(LocalDateTime.now());
         return toDetail(l);
@@ -118,6 +120,7 @@ public class ListingService {
     @Transactional
     public void archive(Long id) {
         Listing l = owned(id);
+        DemoGuard.changeListing(id);
         l.setStatus(ListingStatus.ARCHIVED);
         l.setUpdatedAt(LocalDateTime.now());
     }
@@ -125,6 +128,7 @@ public class ListingService {
     @Transactional
     public List<PhotoDto> addPhotos(Long id, List<MultipartFile> files) {
         Listing l = owned(id);
+        DemoGuard.changeListing(id);
         if (files == null || files.isEmpty()) throw ApiException.validation("Choose at least one photo");
         if (l.getPhotos().size() + files.size() > MAX_PHOTOS) {
             throw ApiException.validation("A listing can have at most " + MAX_PHOTOS + " photos");
@@ -146,6 +150,7 @@ public class ListingService {
     @Transactional
     public void deletePhoto(Long id, Long photoId) {
         Listing l = owned(id);
+        DemoGuard.changeListing(id);
         ListingPhoto p = l.getPhotos().stream().filter(x -> x.getId().equals(photoId)).findFirst()
                 .orElseThrow(() -> ApiException.notFound("Photo"));
         l.getPhotos().remove(p);
@@ -177,6 +182,7 @@ public class ListingService {
     @Transactional
     public void deleteBlock(Long id, Long blockId) {
         owned(id);
+        DemoGuard.removeBlock(blockId);
         AvailabilityBlock a = blocks.findById(blockId).filter(x -> x.getListing().getId().equals(id))
                 .orElseThrow(() -> ApiException.notFound("Block"));
         blocks.delete(a);

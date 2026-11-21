@@ -21,7 +21,7 @@ import java.util.Set;
 public class DemoReadOnlyFilter extends OncePerRequestFilter {
     public static final String MESSAGE = "Demo admin is read-only — changes are disabled in the public demo.";
     private static final Set<String> SAFE_METHODS = Set.of("GET", "HEAD", "OPTIONS");
-    private static final Set<String> ALLOWED_PATHS = Set.of("/api/auth/login", "/api/auth/refresh");
+    private static final Set<String> ALLOWED_PATHS = Set.of("/api/auth/login", "/api/auth/refresh", "/api/auth/logout");
 
     private final ObjectMapper mapper;
 

@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 
 // JWT only: no default in-memory user / generated password.
 @SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
+@org.springframework.scheduling.annotation.EnableScheduling
 public class KiraylaApplication {
     /**
      * Kirayla is a Baku marketplace: "today" for bookings and every timestamp the API returns are

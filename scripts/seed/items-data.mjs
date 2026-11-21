@@ -70,7 +70,21 @@ export const users = [
   [10, "sebine@kirayla.az", "Səbinə Hüseynova", "Sumqayıt", "Tədbir təşkilatçısı.", "USER", false],
   [11, "orxan@kirayla.az", "Orxan Cəfərov", "Bakı", "Proqramçı, həftəsonu velosipedçi.", "USER", false],
   [12, "fidan@kirayla.az", "Fidan Abbasova", "Gəncə", "Tələbə, səyahət bloqeri.", "USER", false],
+  // Recent sign-ups without activity yet (8th field = joined N days ago): they fill the admin "new sign-ups" chart.
+  [13, "murad@kirayla.az", "Murad Vəliyev", "Bakı", null, "USER", false, 142],
+  [14, "aytac@kirayla.az", "Aytac Kərimova", "Sumqayıt", null, "USER", false, 118],
+  [15, "ramin@kirayla.az", "Ramin Qasımov", "Gəncə", null, "USER", false, 96],
+  [16, "lale@kirayla.az", "Lalə Mirzəyeva", "Bakı", null, "USER", false, 71],
+  [17, "samir@kirayla.az", "Samir Hacıyev", "Bakı", null, "USER", false, 64],
+  [18, "narmin@kirayla.az", "Nərmin Əhmədova", "Gəncə", null, "USER", false, 39],
+  [19, "emil@kirayla.az", "Emil Səfərov", "Bakı", null, "USER", false, 31],
+  [20, "zehra@kirayla.az", "Zəhra Bağırova", "Sumqayıt", null, "USER", false, 17],
+  [21, "kenan@kirayla.az", "Kənan Musayev", "Bakı", null, "USER", false, 9],
+  [22, "sevinc@kirayla.az", "Sevinc Ağayeva", "Bakı", null, "USER", false, 3],
 ];
+
+/** The only seed accounts anyone can sign in to (password Demo1234!). */
+export const DEMO_LOGINS = ["aysel@kirayla.az", "rashad@kirayla.az", "demo-admin@kirayla.az"];
 
 export const reviewTexts = [
   [5, "Hər şey təsvirdəki kimi idi, təhvil də vaxtında oldu. Yenə götürəcəyəm."],

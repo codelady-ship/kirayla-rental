@@ -144,44 +144,6 @@
     overscroll-behavior-x: contain;
     scrollbar-color: var(--color-slate-line) transparent;
   }
-  /* phones: request rows become stacked blocks, so every action stays on screen */
-  @media (max-width: 639px) {
-    .dash-stack {
-      overflow-x: visible;
-    }
-    .dash-stack table {
-      display: block;
-      min-width: 0 !important;
-    }
-    .dash-stack thead {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      overflow: hidden;
-      clip-path: inset(50%);
-    }
-    .dash-stack tbody,
-    .dash-stack tr,
-    .dash-stack td {
-      display: block;
-      max-width: none !important;
-    }
-    .dash-stack tr {
-      padding: 16px 24px;
-    }
-    .dash-stack td {
-      padding: 3px 0 !important;
-      white-space: normal !important;
-    }
-    .dash-stack td:empty {
-      display: none;
-    }
-    .dash-stack td > .justify-end {
-      justify-content: flex-start;
-      flex-wrap: wrap;
-      padding-top: 8px;
-    }
-  }
   .dash-input {
     width: 100%;
     min-height: 44px;

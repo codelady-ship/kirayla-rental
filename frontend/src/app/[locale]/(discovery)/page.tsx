@@ -33,7 +33,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   // constellation: one standout listing from as many categories as possible
   const featured: ListingCard[] = [];
-  for (const l of top) if (!featured.some((f) => f.category.id === l.category.id) && l.coverUrl) featured.push(l);
+  const byReviews = [...top].sort((a, b) => b.reviewCount - a.reviewCount || b.ratingAvg - a.ratingAvg || a.id - b.id);
+  for (const c of categories) {
+    const best = byReviews.find((l) => l.category.id === c.id && l.coverUrl);
+    if (best) featured.push(best);
+  }
   // bands: the four categories with the most listings, best-rated first
   const bandCats = [...categories].filter((c) => c.listingCount >= 3).sort((a, b) => b.listingCount - a.listingCount || a.sortOrder - b.sortOrder).slice(0, 4);
   const cities = ["Bakı", "Gəncə", "Sumqayıt"].map((city) => ({ city, count: top.filter((l) => l.city === city).length }));

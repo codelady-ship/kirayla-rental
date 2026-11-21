@@ -49,7 +49,9 @@ public class GlobalExceptionHandler {
             MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class,
             MultipartException.class})
     ResponseEntity<ErrorResponse> badRequest(Exception e) {
-        String msg = e instanceof HttpMessageNotReadableException ? "Malformed request body" : e.getMessage();
+        String msg = e instanceof HttpMessageNotReadableException ? "Malformed request body"
+                : e instanceof MethodArgumentTypeMismatchException m ? "Invalid value for '" + m.getName() + "'"
+                : e.getMessage();
         return ResponseEntity.badRequest().body(ErrorResponse.of(400, "VALIDATION_ERROR", msg));
     }
 

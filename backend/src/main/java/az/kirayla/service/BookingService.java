@@ -107,9 +107,8 @@ public class BookingService {
 
     @Transactional
     public BookingDto accept(Long id) {
-        Booking b = find(id);
+        Booking b = lockAndFind(id);
         requireHost(b);
-        listings.findByIdForUpdate(b.getListing().getId());
         requireState(b, BookingStatus.REQUESTED);
         assertFree(b.getListing().getId(), b.getStartDate(), b.getEndDate(), Set.of(BookingStatus.ACCEPTED), b.getId());
         b.setStatus(BookingStatus.ACCEPTED);
@@ -122,7 +121,7 @@ public class BookingService {
 
     @Transactional
     public BookingDto decline(Long id) {
-        Booking b = find(id);
+        Booking b = lockAndFind(id);
         requireHost(b);
         requireState(b, BookingStatus.REQUESTED);
         b.setStatus(BookingStatus.DECLINED);
@@ -131,7 +130,7 @@ public class BookingService {
 
     @Transactional
     public BookingDto cancel(Long id) {
-        Booking b = find(id);
+        Booking b = lockAndFind(id);
         Long me = CurrentUser.id();
         if (isRenter(b, me)) {
             boolean ok = b.getStatus() == BookingStatus.REQUESTED
@@ -148,7 +147,7 @@ public class BookingService {
 
     @Transactional
     public BookingDto complete(Long id) {
-        Booking b = find(id);
+        Booking b = lockAndFind(id);
         requireHost(b);
         requireState(b, BookingStatus.ACCEPTED);
         if (LocalDate.now().isBefore(b.getStartDate())) {
@@ -160,7 +159,7 @@ public class BookingService {
 
     @Transactional
     public ReviewDto review(Long id, ReviewRequest req) {
-        Booking b = find(id);
+        Booking b = lockAndFind(id);
         if (!isRenter(b, CurrentUser.id())) throw ApiException.forbidden("Only the renter can review this booking");
         requireState(b, BookingStatus.COMPLETED);
         if (reviews.existsByBookingId(b.getId())) throw ApiException.invalidState("This booking has already been reviewed");
@@ -187,6 +186,17 @@ public class BookingService {
         if (blocks.countOverlapping(listingId, from, to) > 0) {
             throw new ApiException(HttpStatus.CONFLICT, "BOOKING_CONFLICT", "The owner has blocked some of these dates");
         }
+    }
+
+    /**
+     * Takes the listing's row lock (the same one {@link #create} uses) BEFORE loading the booking, so the
+     * status that is checked is the committed one: of two concurrent transitions on a booking only one wins,
+     * the other sees the new status and answers 409 INVALID_STATE.
+     */
+    private Booking lockAndFind(Long id) {
+        Long listingId = bookings.findListingId(id).orElseThrow(() -> ApiException.notFound("Booking"));
+        listings.findByIdForUpdate(listingId);
+        return find(id);
     }
 
     private Booking find(Long id) {

@@ -41,13 +41,20 @@ public class JwtService {
         this.refreshTtl = refreshTtl;
     }
 
-    public String accessToken(User user) { return token(user, ACCESS, accessTtl); }
+    /** A verified refresh token: whose it is and its unique id (jti). */
+    public record Refresh(Long userId, String id) {}
 
-    public String refreshToken(User user) { return token(user, REFRESH, refreshTtl); }
+    public Duration refreshTtl() { return refreshTtl; }
 
-    private String token(User user, String type, Duration ttl) {
+    public String accessToken(User user) { return token(user, ACCESS, accessTtl, null); }
+
+    /** {@code id} becomes the token's jti; the caller stores it so the token can be spent or revoked. */
+    public String refreshToken(User user, String id) { return token(user, REFRESH, refreshTtl, id); }
+
+    private String token(User user, String type, Duration ttl, String id) {
         Instant now = Instant.now();
         return Jwts.builder()
+                .id(id)
                 .subject(String.valueOf(user.getId()))
                 .claim("email", user.getEmail())
                 .claim("role", user.getRole().name())
@@ -66,6 +73,18 @@ public class JwtService {
                     .parseSignedClaims(token).getPayload();
             if (!expectedType.equals(claims.get("typ", String.class))) return Optional.empty();
             return Optional.of(Long.valueOf(claims.getSubject()));
+        } catch (JwtException | IllegalArgumentException e) {
+            return Optional.empty();
+        }
+    }
+
+    /** Verifies a refresh token's signature, type and expiry and returns its owner and jti. */
+    public Optional<Refresh> verifyRefresh(String token) {
+        try {
+            Claims claims = Jwts.parser().verifyWith(key).requireIssuer("kirayla").build()
+                    .parseSignedClaims(token).getPayload();
+            if (!REFRESH.equals(claims.get("typ", String.class)) || claims.getId() == null) return Optional.empty();
+            return Optional.of(new Refresh(Long.valueOf(claims.getSubject()), claims.getId()));
         } catch (JwtException | IllegalArgumentException e) {
             return Optional.empty();
         }

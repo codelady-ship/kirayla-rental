@@ -1,9 +1,13 @@
 package az.kirayla.service;
 
 import az.kirayla.common.ApiException;
+import az.kirayla.demo.DemoGuard;
+import az.kirayla.domain.RefreshToken;
 import az.kirayla.domain.User;
+import az.kirayla.repo.RefreshTokenRepository;
 import az.kirayla.repo.UserRepository;
 import az.kirayla.security.JwtService;
+import az.kirayla.security.LoginRateLimiter;
 import az.kirayla.web.dto.Dtos.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,8 +20,13 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final JwtService jwt;
     private final Mapper mapper;
+    private final RefreshTokenRepository refreshTokens;
+    private final LoginRateLimiter limiter;
 
-    public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwt, Mapper mapper) {
+    public AuthService(UserRepository users, PasswordEncoder encoder, JwtService jwt, Mapper mapper,
+                       RefreshTokenRepository refreshTokens, LoginRateLimiter limiter) {
+        this.refreshTokens = refreshTokens;
+        this.limiter = limiter;
         this.users = users;
         this.encoder = encoder;
         this.jwt = jwt;
@@ -39,22 +48,45 @@ public class AuthService {
         return tokens(u);
     }
 
-    @Transactional(readOnly = true)
-    public AuthResponse login(LoginRequest req) {
-        User u = users.findByEmailIgnoreCase(req.email().trim())
-                .filter(x -> encoder.matches(req.password(), x.getPasswordHash()))
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "BAD_CREDENTIALS", "Wrong email or password"));
+    /** {@code clientAddress} is the caller's network address, used only to rate-limit failed attempts. */
+    @Transactional(noRollbackFor = ApiException.class)
+    public AuthResponse login(LoginRequest req, String clientAddress) {
+        String email = req.email().trim();
+        limiter.check(clientAddress, email);
+        User u = users.findByEmailIgnoreCase(email)
+                .filter(x -> isBcrypt(x.getPasswordHash()) && encoder.matches(req.password(), x.getPasswordHash()))
+                .orElse(null);
+        if (u == null) {
+            limiter.failed(clientAddress, email);
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "BAD_CREDENTIALS", "Wrong email or password");
+        }
         if (!u.isEnabled()) throw ApiException.forbidden("This account has been disabled");
+        limiter.succeeded(clientAddress, email);
         return tokens(u);
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * Rotation: a refresh token works exactly once. Using it deletes its row and issues a new pair; a token
+     * that was already used, logged out or never issued by this server is refused.
+     */
+    @Transactional
     public AuthResponse refresh(RefreshRequest req) {
-        User u = jwt.verify(req.refreshToken(), JwtService.REFRESH)
-                .flatMap(users::findById)
-                .filter(User::isEnabled)
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Refresh token is invalid or expired"));
+        ApiException invalid = new ApiException(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Refresh token is invalid or expired");
+        JwtService.Refresh token = jwt.verifyRefresh(req.refreshToken()).orElseThrow(() -> invalid);
+        if (refreshTokens.revoke(token.id()) == 0) throw invalid;
+        User u = users.findById(token.userId()).filter(User::isEnabled).orElseThrow(() -> invalid);
         return tokens(u);
+    }
+
+    /** Revokes the given refresh token. Unknown or already spent tokens are ignored: logging out always succeeds. */
+    @Transactional
+    public void logout(RefreshRequest req) {
+        jwt.verifyRefresh(req.refreshToken()).ifPresent(t -> refreshTokens.revoke(t.id()));
+    }
+
+    /** Seed users that are not demo logins carry a placeholder instead of a hash and can never sign in. */
+    private static boolean isBcrypt(String hash) {
+        return hash != null && hash.startsWith("$2");
     }
 
     @Transactional(readOnly = true)
@@ -64,6 +96,7 @@ public class AuthService {
 
     @Transactional
     public UserDto updateProfile(Long id, UpdateProfileRequest req) {
+        DemoGuard.changeProfile();
         User u = users.findById(id).orElseThrow(ApiException::unauthorized);
         u.setFullName(req.name().trim());
         u.setCity(blankToNull(req.city()));
@@ -78,7 +111,9 @@ public class AuthService {
     }
 
     private AuthResponse tokens(User u) {
-        return new AuthResponse(jwt.accessToken(u), jwt.refreshToken(u), mapper.user(u));
+        String id = java.util.UUID.randomUUID().toString();
+        refreshTokens.save(new RefreshToken(id, u.getId(), java.time.LocalDateTime.now().plus(jwt.refreshTtl())));
+        return new AuthResponse(jwt.accessToken(u), jwt.refreshToken(u, id), mapper.user(u));
     }
 
     static String blankToNull(String s) {

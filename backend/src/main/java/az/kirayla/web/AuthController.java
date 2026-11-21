@@ -24,8 +24,15 @@ public class AuthController {
     }
 
     @PostMapping("/api/auth/login")
-    public AuthResponse login(@Valid @RequestBody LoginRequest req) {
-        return auth.login(req);
+    public AuthResponse login(@Valid @RequestBody LoginRequest req, jakarta.servlet.http.HttpServletRequest http) {
+        return auth.login(req, http.getRemoteAddr());
+    }
+
+    /** Revokes the refresh token; the short-lived access token simply expires. */
+    @PostMapping("/api/auth/logout")
+    public org.springframework.http.ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequest req) {
+        auth.logout(req);
+        return org.springframework.http.ResponseEntity.noContent().build();
     }
 
     @PostMapping("/api/auth/refresh")

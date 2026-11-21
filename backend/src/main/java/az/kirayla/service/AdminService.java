@@ -55,7 +55,9 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public PageResponse<AdminUser> users(String q, int page, int size) {
-        Page<User> p = users.search(like(q), pageable(page, size, Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"))));
+        Pageable pr = pageable(page, size, Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id")));
+        boolean demo = CurrentUser.require().readOnly();
+        Page<User> p = demo ? users.searchPublicFields(like(q), pr) : users.search(like(q), pr);
         return PageResponse.of(p, this::adminUser);
     }
 

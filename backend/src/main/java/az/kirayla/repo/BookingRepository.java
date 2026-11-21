@@ -64,4 +64,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     BigDecimal sumRentalTotal(@Param("statuses") Collection<BookingStatus> statuses);
 
     Page<Booking> findByStatus(BookingStatus status, Pageable pageable);
+
+    @Query("select b.listing.id from Booking b where b.id = :id")
+    java.util.Optional<Long> findListingId(@Param("id") Long id);
 }

@@ -8,47 +8,39 @@ import type { Category, ListingCard } from "@/lib/types";
 import { CATEGORY_TINT, Icon } from "../icons";
 import { Photo, Wordmark } from "../ui";
 
-// Hand-placed constellation. l = left % at ≥1280 (7 cards), lm = left % at 640–1279 (5 cards, the two "wide only"
-// ones are hidden), t = top px, w = width px (scaled by --k below 1280), r = tilt, d = float delay.
-// Neighbours overlap by ~12px — the card's own padding — so no title is ever covered.
-const SPOTS: { l: number; lm: number; t: number; w: number; r: number; d: number; z: number; wideOnly?: boolean }[] = [
-  { l: 0, lm: 0, t: 44, w: 160, r: -4, d: 0, z: 2 },
-  { l: 14.2, lm: 0, t: 4, w: 150, r: 3, d: 1.4, z: 1, wideOnly: true },
-  { l: 27.5, lm: 20.5, t: 56, w: 172, r: -2, d: 0.6, z: 3 },
-  { l: 42.9, lm: 41, t: 10, w: 156, r: 2.5, d: 2.1, z: 2 },
-  { l: 56.7, lm: 60.5, t: 50, w: 168, r: -3, d: 0.9, z: 3 },
-  { l: 71.2, lm: 0, t: 0, w: 150, r: 3.5, d: 1.8, z: 1, wideOnly: true },
-  { l: 84.6, lm: 81, t: 34, w: 160, r: -1.5, d: 0.3, z: 2 },
+// The floating row above the wordmark. Cards share the row's width (flex), so they can never cover each
+// other's title or price at any viewport; "floating" comes from the stagger (drop), the tilt and the bob.
+// grow = relative width, drop = px from the top, r = tilt, d = float delay; "wideOnly" cards appear from 1280px.
+const SPOTS: { grow: number; drop: number; r: number; d: number; wideOnly?: boolean }[] = [
+  { grow: 1.04, drop: 40, r: -3, d: 0 },
+  { grow: 0.94, drop: 4, r: 2.5, d: 1.4, wideOnly: true },
+  { grow: 1.1, drop: 52, r: -2, d: 0.6 },
+  { grow: 0.98, drop: 10, r: 2, d: 2.1 },
+  { grow: 1.08, drop: 46, r: -2.5, d: 0.9 },
+  { grow: 0.94, drop: 0, r: 3, d: 1.8, wideOnly: true },
+  { grow: 1.02, drop: 30, r: -1.5, d: 0.3 },
 ];
 
 function FloatCard({ l, spot, locale }: { l: ListingCard; spot: (typeof SPOTS)[number]; locale: string }) {
-  const style = {
-    "--l": `${spot.l}%`,
-    "--lm": `${spot.lm}%`,
-    top: spot.t,
-    width: `calc(${spot.w}px * var(--k))`,
-    zIndex: spot.z,
-    rotate: `${spot.r}deg`,
-    animationDelay: `${spot.d}s`,
-  } as CSSProperties;
+  const style = { flexGrow: spot.grow, marginTop: spot.drop, rotate: `${spot.r}deg`, animationDelay: `${spot.d}s` } as CSSProperties;
   return (
     <Link
       href={`/listing/${l.id}`}
       style={style}
-      className={`group absolute left-[min(var(--lm),calc(100%_-_var(--k)_*_170px))] animate-float rounded-pillow bg-white p-2 shadow-[var(--shadow-float)] transition-shadow hover:shadow-[var(--shadow-lift)] xl:left-[var(--l)] ${spot.wideOnly ? "max-xl:hidden" : ""}`}
+      className={`group min-w-0 basis-0 animate-float rounded-pillow bg-white p-2 shadow-[var(--shadow-float)] transition-shadow hover:shadow-[var(--shadow-lift)] ${spot.wideOnly ? "max-xl:hidden" : ""}`}
     >
       <span className="relative block aspect-square overflow-hidden rounded-pillow-inner bg-[#ece9e7]">
         <Photo src={l.coverUrl} alt="" fill sizes="190px" className="object-cover transition-transform duration-500 group-hover:scale-[1.04]" />
       </span>
       <span className="block px-1.5 pb-1 pt-2">
         <span className="block truncate text-[14px] font-semibold tracking-[-0.014em]">{l.title}</span>
-        <span className="mt-0.5 flex items-center justify-between text-[12px] text-stone">
-          <span className="num">
+        <span className="mt-0.5 flex items-center justify-between gap-2 text-[12px] text-stone">
+          <span className="num truncate">
             {money(l.dailyPrice, locale)}
             <span className="text-[11px]"> / {locale === "en" ? "day" : "gün"}</span>
           </span>
           {l.reviewCount > 0 && (
-            <span className="flex items-center gap-0.5 text-[11px] text-ink" aria-label={`${l.ratingAvg} / 5`}>
+            <span className="flex shrink-0 items-center gap-0.5 text-[11px] text-ink" aria-label={`${l.ratingAvg} / 5`}>
               <Icon name="star" size={9} fill="currentColor" strokeWidth={0} />
               <span className="num">{l.ratingAvg.toFixed(1)}</span>
             </span>
@@ -73,7 +65,7 @@ export function DiscoveryHero({ featured, categories }: { featured: ListingCard[
   return (
     <section className="mx-auto max-w-[1200px] px-4 pb-6 2xl:max-w-[1440px] pt-2 sm:px-6 lg:pt-10" aria-labelledby="hero-title">
       {/* constellation */}
-      <div aria-label={t("constellationLabel")} role="group" className="relative mx-auto hidden h-[250px] max-w-[1040px] [--k:0.7] sm:block md:h-[270px] md:[--k:0.82] xl:h-[300px] xl:[--k:1]">
+      <div aria-label={t("constellationLabel")} role="group" className="mx-auto hidden max-w-[1120px] items-start gap-2.5 pb-3 sm:flex md:gap-3.5 xl:gap-4">
         {featured.slice(0, SPOTS.length).map((l, i) => (
           <FloatCard key={l.id} l={l} spot={SPOTS[i]} locale={locale} />
         ))}

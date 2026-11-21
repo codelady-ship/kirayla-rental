@@ -24,7 +24,8 @@ spring:
 
 server:
   port: ${PORT:8080}
-  forward-headers-strategy: framework
+  # dev/test: no proxy in front, never trust X-Forwarded-* (the prod profile switches to "native")
+  forward-headers-strategy: none
   compression:
     enabled: true
     mime-types: application/json

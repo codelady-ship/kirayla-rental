@@ -66,14 +66,11 @@ export function Pill({ children, tone = "neutral" }: { children: ReactNode; tone
 
 export const BOOKING_TONE = { REQUESTED: "warn", ACCEPTED: "good", DECLINED: "neutral", CANCELLED: "neutral", COMPLETED: "info" } as const;
 
-/**
- * Wide tables scroll inside their card, never the page. With `stack`, rows turn into stacked blocks on phones
- * (used for booking requests, where the accept / decline buttons must not hide behind a horizontal scroll).
- */
-export function Table({ head, children, minWidth = 720, stack = false }: { head: string[]; children: ReactNode; minWidth?: number; stack?: boolean }) {
+/** Wide admin tables scroll inside their card, never the page. */
+export function Table({ head, children, minWidth = 720 }: { head: string[]; children: ReactNode; minWidth?: number }) {
   const t = useTranslations("Dash");
   return (
-    <div className={`dash-scroll -mx-6 sm:-mx-8 ${stack ? "dash-stack" : ""}`} role="region" aria-label={t("tableScroll")} tabIndex={0}>
+    <div className="dash-scroll -mx-6 sm:-mx-8" role="region" aria-label={t("tableScroll")} tabIndex={0}>
       <table className="w-full border-collapse text-left text-[14px]" style={{ minWidth }}>
         <thead>
           <tr className="border-b border-slate-line text-[12px] tracking-[0.01em] text-ash">
