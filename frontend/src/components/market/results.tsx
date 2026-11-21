@@ -180,7 +180,7 @@ export function ResultsView({ fixedCategory, heading }: { fixedCategory?: string
                 <Link
                   href={`/c/${c.slug}`}
                   aria-current={active ? "page" : undefined}
-                  className={`flex min-h-11 flex-col items-center gap-1.5 border-b-2 pb-3 text-[12px] font-medium transition-colors ${
+                  className={`flex min-h-11 min-w-11 flex-col items-center gap-1.5 border-b-2 pb-3 text-[12px] font-medium transition-colors ${
                     active ? "border-hof text-hof" : "border-transparent text-foggy hover:border-deco hover:text-hof"
                   }`}
                 >

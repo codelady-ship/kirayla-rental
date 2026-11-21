@@ -119,7 +119,7 @@ export function DashShell({ kind, children }: { kind: "host" | "admin"; children
               aria-expanded={drawer}
               aria-controls={drawerId}
               aria-label={t("openMenu")}
-              className="flex size-11 items-center justify-center rounded-full border border-slate-line lg:hidden"
+              className="flex size-11 shrink-0 items-center justify-center rounded-full border border-slate-line lg:hidden"
             >
               <Icon name="menu" size={20} />
             </button>

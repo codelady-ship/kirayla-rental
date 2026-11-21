@@ -65,7 +65,7 @@ function RequestRow({ b, onAction, busy, compact = false }: { b: Booking; onActi
         </div>
       </td>
       <td className="max-w-[220px]">
-        <Link href={`/listing/${b.listing.id}`} className="block truncate text-ivory hover:underline">
+        <Link href={`/listing/${b.listing.id}`} className="block truncate py-3 text-ivory hover:underline">
           {b.listing.title}
         </Link>
       </td>
@@ -94,7 +94,7 @@ function RequestRow({ b, onAction, busy, compact = false }: { b: Booking; onActi
             </DButton>
           )}
           {b.conversationId && (
-            <Link href={`/messages/${b.conversationId}`} aria-label={`${tc("send")}: ${b.renter.name}`} className="flex size-11 items-center justify-center rounded-full text-ash hover:bg-obsidian hover:text-ivory">
+            <Link href={`/messages/${b.conversationId}`} aria-label={`${tc("send")}: ${b.renter.name}`} className="flex size-11 shrink-0 items-center justify-center rounded-full text-ash hover:bg-obsidian hover:text-ivory">
               <Icon name="message" size={18} />
             </Link>
           )}
@@ -142,11 +142,11 @@ export function HostOverview() {
               {e.topListings.length === 0 ? (
                 <Empty>—</Empty>
               ) : (
-                <ol className="space-y-4">
+                <ol>
                   {e.topListings.map((l, i) => (
                     <li key={l.id} className="flex items-center gap-4">
                       <span className="num w-5 text-[14px] text-ash">{i + 1}</span>
-                      <Link href={`/host/listings/${l.id}`} className="min-w-0 flex-1 truncate hover:underline">
+                      <Link href={`/host/listings/${l.id}`} className="min-w-0 flex-1 truncate py-2.5 hover:underline">
                         {l.title}
                       </Link>
                       <span className="num shrink-0 text-[14px]">{fm(l.amount)}</span>

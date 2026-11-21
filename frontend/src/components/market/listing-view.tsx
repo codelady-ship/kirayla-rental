@@ -68,7 +68,7 @@ export function ListingView({ listing, demo }: { listing: ListingDetail; demo: b
 
   return (
     <>
-      {demo && <DemoBanner />}
+      {demo && <DemoBanner force />}
       <div className="mx-auto max-w-[1180px] px-4 pb-28 pt-4 sm:px-6 lg:px-10 lg:pb-16 lg:pt-6">
         <nav aria-label={t("breadcrumb")} className="mb-3 hidden text-[14px] text-foggy sm:block">
           <ol className="flex flex-wrap items-center gap-1.5">

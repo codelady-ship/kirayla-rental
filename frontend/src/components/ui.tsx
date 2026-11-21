@@ -66,10 +66,10 @@ export function Stars({ value, count, size = 14, className = "" }: { value: numb
   );
 }
 
-export function DemoBanner({ tone = "light" }: { tone?: "light" | "dark" }) {
+export function DemoBanner({ tone = "light", force = false }: { tone?: "light" | "dark"; force?: boolean }) {
   const { demo } = useDemoMode();
   const t = useTranslations("Common");
-  if (!demo) return null;
+  if (!demo && !force) return null;
   return (
     <div
       role="status"

@@ -78,7 +78,7 @@ export function Gallery({ photos, title }: { photos: P[]; title: string }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="absolute bottom-4 right-4 hidden min-h-9 items-center gap-2 rounded-lg border border-hof bg-white px-3 text-[14px] font-medium sm:inline-flex"
+          className="absolute bottom-4 right-4 hidden min-h-11 items-center gap-2 rounded-lg border border-hof bg-white px-3 text-[14px] font-medium sm:inline-flex"
         >
           <Icon name="grid" size={16} />
           {t("showAll")}
@@ -100,7 +100,7 @@ export function Gallery({ photos, title }: { photos: P[]; title: string }) {
                   <Photo src={p.url} alt={alt(i)} fill sizes="(min-width: 768px) 768px, 100vw" className="object-contain" />
                 </div>
                 {p.credit && (
-                  <p className="mt-2 text-[12px] text-foggy">
+                  <p className="mt-2 text-[12px] text-foggy" translate="no">
                     {tc("photoCredit")}:{" "}
                     {p.creditUrl ? (
                       <a href={p.creditUrl} className="underline underline-offset-2 hover:text-hof" rel="noopener nofollow" target="_blank">

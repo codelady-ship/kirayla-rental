@@ -236,7 +236,7 @@ export function AdminListings() {
                       <Photo src={l.coverUrl} alt="" fill sizes="40px" className="object-cover" />
                     </span>
                     <div className="min-w-0 max-w-[260px]">
-                      <Link href={`/listing/${l.id}`} className="block truncate text-ivory hover:underline">
+                      <Link href={`/listing/${l.id}`} className="block truncate py-3 text-ivory hover:underline">
                         {l.title}
                       </Link>
                       <p className="truncate text-[12px] text-ash">{locale === "en" ? l.categoryNameEn : l.categoryNameAz}</p>
@@ -303,7 +303,7 @@ export function AdminBookings() {
               <tr key={b.id}>
                 <td className="num text-ash">{b.id}</td>
                 <td className="max-w-[240px]">
-                  <Link href={`/listing/${b.listing.id}`} className="block truncate text-ivory hover:underline">
+                  <Link href={`/listing/${b.listing.id}`} className="block truncate py-3 text-ivory hover:underline">
                     {b.listing.title}
                   </Link>
                 </td>
@@ -482,7 +482,7 @@ export function AdminReports() {
                     <Pill tone={r.status === "OPEN" ? "warn" : r.status === "RESOLVED" ? "good" : "neutral"}>{t(`report_${r.status}`)}</Pill>
                     <span className="num text-[12px] text-ash">{fmtDate(r.createdAt, locale, { day: "numeric", month: "short", year: "numeric" })}</span>
                   </div>
-                  <Link href={`/listing/${r.listing.id}`} className="mt-3 block truncate text-[16px] font-[480] hover:underline">
+                  <Link href={`/listing/${r.listing.id}`} className="mt-1 block truncate py-2.5 text-[16px] font-[480] hover:underline">
                     {r.listing.title}
                   </Link>
                   <p className="mt-1 text-[15px]">“{r.reason}”</p>

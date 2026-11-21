@@ -129,7 +129,7 @@ test.describe.serial("Kirayla flows", () => {
     await login(page, renter.email, renter.password);
     await page.goto("/az/listing/5");
     await page.getByRole("button", { name: "Ev sahibinə yaz" }).click();
-    await page.getByRole("dialog").getByLabel("Mesaj").fill(hello);
+    await page.getByRole("dialog").getByLabel("Mesaj", { exact: true }).fill(hello);
     await page.getByRole("dialog").getByRole("button", { name: "Göndər" }).click();
     await page.waitForURL(/\/messages\/\d+$/);
     await expect(page.locator("p", { hasText: hello })).toBeVisible();
@@ -139,8 +139,8 @@ test.describe.serial("Kirayla flows", () => {
     await page.goto("/az/messages");
     await page.getByRole("link", { name: new RegExp(renter.name) }).click();
     await expect(page.locator("p", { hasText: hello })).toBeVisible();
-    await page.getByLabel("Mesaj").fill(reply);
-    await page.getByRole("button", { name: "Göndər" }).click();
+    await page.getByLabel("Mesaj", { exact: true }).fill(reply);
+    await page.getByRole("button", { name: "Göndər", exact: true }).click();
     await expect(page.locator("p", { hasText: reply })).toBeVisible();
     expect(errors).toEqual([]);
   });
