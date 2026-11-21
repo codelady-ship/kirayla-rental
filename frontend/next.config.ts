@@ -8,7 +8,8 @@ const FRAME_ANCESTORS = "frame-ancestors 'self' https://antiqa-portfolio.vercel.
 
 function apiHost(): { protocol: "http" | "https"; hostname: string; port?: string } | null {
   try {
-    const u = new URL(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080");
+    if (!process.env.NEXT_PUBLIC_API_URL) return null; // no API configured: demo snapshot only
+    const u = new URL(process.env.NEXT_PUBLIC_API_URL);
     return { protocol: u.protocol === "https:" ? "https" : "http", hostname: u.hostname, ...(u.port ? { port: u.port } : {}) };
   } catch {
     return null;

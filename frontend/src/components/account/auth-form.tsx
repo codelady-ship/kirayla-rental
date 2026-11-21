@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { ApiError } from "@/lib/api";
 import { CITIES } from "@/lib/format";
+import { safeNext } from "@/lib/safe-next";
 import { Icon } from "../icons";
 import { useApiErrorToast, useAuth, useToast } from "../providers";
 import { Spinner } from "../ui";
@@ -16,12 +17,6 @@ export const DEMO_ACCOUNTS = [
   { key: "demoAdmin", email: "demo-admin@kirayla.az", icon: "shield" },
 ] as const;
 export const DEMO_PASSWORD = "Demo1234!";
-
-/** Only same-site relative paths (never protocol-relative or absolute URLs); strips a locale prefix. */
-export function safeNext(next: string | null, fallback: string) {
-  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) return fallback;
-  return next.replace(/^\/(az|en)(?=\/|$|\?)/, "") || "/";
-}
 
 export function AuthForm({ mode }: { mode: "login" | "register" }) {
   const t = useTranslations("Auth");

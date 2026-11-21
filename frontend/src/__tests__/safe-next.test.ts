@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safeNext } from "@/components/account/auth-form";
+import { safeNext } from "@/lib/safe-next";
 
 describe("post-login redirect", () => {
   it("keeps same-site paths and strips the locale", () => {

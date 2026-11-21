@@ -62,9 +62,12 @@ export function Profile() {
   const [form, setForm] = useState({ name: "", city: "", bio: "" });
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (user) setForm({ name: user.name, city: user.city ?? "", bio: user.bio ?? "" });
-  }, [user]);
+  // fill the form once per loaded account (state adjusted during render, not in an effect)
+  const [filledFor, setFilledFor] = useState<number | null>(null);
+  if (user && filledFor !== user.id) {
+    setFilledFor(user.id);
+    setForm({ name: user.name, city: user.city ?? "", bio: user.bio ?? "" });
+  }
 
   if (!allowed || !user) return <div className="flex justify-center py-24"><Spinner /></div>;
 

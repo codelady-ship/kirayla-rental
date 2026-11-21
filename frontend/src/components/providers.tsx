@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { api, ApiError, readTokens, writeTokens } from "@/lib/api";
+import { api, API_CONFIGURED, ApiError, readTokens, writeTokens } from "@/lib/api";
 import type { AuthResponse, User } from "@/lib/types";
 
 // ---- toasts ------------------------------------------------------------------------------
@@ -75,16 +75,23 @@ function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!readTokens()) {
-      setReady(true);
-      return;
-    }
-    api<User>("/api/auth/me", { timeoutMs: 20000 })
-      .then(setUser)
-      .catch((e) => {
-        if (e instanceof ApiError && (e.status === 401 || e.status === 403)) writeTokens(null);
-      })
-      .finally(() => setReady(true));
+    let alive = true;
+    const restore =
+      API_CONFIGURED && readTokens()
+        ? api<User>("/api/auth/me", { timeoutMs: 20000 })
+            .then((u) => {
+              if (alive) setUser(u);
+            })
+            .catch((e) => {
+              if (e instanceof ApiError && (e.status === 401 || e.status === 403)) writeTokens(null);
+            })
+        : Promise.resolve();
+    void restore.finally(() => {
+      if (alive) setReady(true);
+    });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const accept = (r: AuthResponse) => {
@@ -111,24 +118,35 @@ function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 // ---- wishlist ----------------------------------------------------------------------------
+const NO_IDS: Set<number> = new Set();
 type WishState = { ids: Set<number>; toggle: (id: number) => Promise<boolean | null> };
 const WishCtx = createContext<WishState>({ ids: new Set(), toggle: async () => null });
 export const useWishlist = () => useContext(WishCtx);
 
 function WishlistProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
-  const [ids, setIds] = useState<Set<number>>(new Set());
+  // ids belong to one account: after logout / account switch the old set is ignored, not cleared in an effect
+  const [saved, setSaved] = useState<{ owner: number | null; ids: Set<number> }>({ owner: null, ids: NO_IDS });
   const onError = useApiErrorToast();
+  const userId = user?.id ?? null;
+  const ids = userId !== null && saved.owner === userId ? saved.ids : NO_IDS;
+  const setIds = useCallback(
+    (fn: (s: Set<number>) => Set<number>) => setSaved((s) => ({ owner: userId, ids: fn(s.owner === userId ? s.ids : NO_IDS) })),
+    [userId],
+  );
 
   useEffect(() => {
-    if (!user) {
-      setIds(new Set());
-      return;
-    }
+    if (userId === null) return;
+    let alive = true;
     api<number[]>("/api/wishlist/ids")
-      .then((xs) => setIds(new Set(xs)))
+      .then((xs) => {
+        if (alive) setSaved({ owner: userId, ids: new Set(xs) });
+      })
       .catch(() => {});
-  }, [user]);
+    return () => {
+      alive = false;
+    };
+  }, [userId]);
 
   const toggle = useCallback(
     async (id: number) => {
@@ -154,7 +172,7 @@ function WishlistProvider({ children }: { children: ReactNode }) {
         return null;
       }
     },
-    [ids, user, onError],
+    [ids, user, onError, setIds],
   );
   return <WishCtx.Provider value={{ ids, toggle }}>{children}</WishCtx.Provider>;
 }

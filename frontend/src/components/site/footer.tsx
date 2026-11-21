@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { API_URL } from "@/lib/api";
+import { API_CONFIGURED, API_URL } from "@/lib/api";
 import { Wordmark } from "../ui";
 
 const CATS = [
@@ -61,11 +61,13 @@ export function Footer({ tone, locale }: { tone: "discovery" | "market"; locale:
         <div>
           <h2 className={head}>{t("company")}</h2>
           <ul className="space-y-1">
-            <li>
-              <a href={`${API_URL}/swagger-ui.html`} className={link} rel="noopener">
-                {t("api")}
-              </a>
-            </li>
+            {API_CONFIGURED && (
+              <li>
+                <a href={`${API_URL}/swagger-ui.html`} className={link} rel="noopener">
+                  {t("api")}
+                </a>
+              </li>
+            )}
             <li>
               <a href="https://github.com/codelady-ship/kirayla-rental" className={link} rel="noopener">
                 {t("source")}

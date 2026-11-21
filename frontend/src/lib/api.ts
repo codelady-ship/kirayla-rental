@@ -1,6 +1,12 @@
 import type { AuthResponse, SearchParams } from "./types";
 
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080").replace(/\/$/, "");
+/**
+ * Base URL of the Spring Boot API. There is deliberately NO default: when NEXT_PUBLIC_API_URL is not set
+ * (e.g. a Vercel deploy made before the API exists) the site makes no API calls at all and serves the
+ * bundled demo snapshot instead.
+ */
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? "").trim().replace(/\/$/, "");
+export const API_CONFIGURED = API_URL !== "";
 /** How long a public read may take before the UI switches to the bundled demo snapshot (Render cold start). */
 export const COLD_START_MS = 8000;
 
@@ -55,7 +61,7 @@ const currentTokens = () => readTokens() ?? memoryTokens;
 let refreshing: Promise<boolean> | null = null;
 async function refresh(): Promise<boolean> {
   const tokens = currentTokens();
-  if (!tokens?.refreshToken) return false;
+  if (!tokens?.refreshToken || !API_CONFIGURED) return false;
   refreshing ??= fetch(`${API_URL}/api/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -86,6 +92,7 @@ export interface RequestOptions extends Omit<RequestInit, "body"> {
 
 export async function api<T>(path: string, opts: RequestOptions = {}, retried = false): Promise<T> {
   const { body, timeoutMs, auth = true, headers, ...rest } = opts;
+  if (!API_CONFIGURED) throw new ApiError(0, "NO_API", "API is not configured");
   const h = new Headers(headers);
   const isForm = typeof FormData !== "undefined" && body instanceof FormData;
   if (body !== undefined && !isForm) h.set("Content-Type", "application/json");
@@ -148,6 +155,7 @@ export function toQuery(params: SearchParams | Record<string, string | number | 
  * so callers can tell "not found" (404) apart from "fall back to the demo snapshot".
  */
 export async function serverGet<T>(path: string, revalidate = 300, timeoutMs = COLD_START_MS): Promise<{ data: T | null; status: number }> {
+  if (!API_CONFIGURED) return { data: null, status: 0 };
   try {
     const res = await fetch(`${API_URL}${path}`, {
       next: { revalidate },

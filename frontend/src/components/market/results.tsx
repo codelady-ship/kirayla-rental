@@ -35,8 +35,8 @@ function Filters({ params, categories, fixedCategory, onApply, idPrefix }: { par
   const t = useTranslations("Search");
   const tc = useTranslations("Common");
   const locale = useLocale();
+  // remounted (key = query string) whenever the applied params change, so the draft always starts from them
   const [draft, setDraft] = useState(params);
-  useEffect(() => setDraft(params), [params]);
   const set = (k: keyof SearchParams, v: string) => setDraft((d) => ({ ...d, [k]: v === "" ? undefined : k === "minPrice" || k === "maxPrice" ? Number(v) : v }));
   const submit = (e: FormEvent) => {
     e.preventDefault();
@@ -235,7 +235,7 @@ export function ResultsView({ fixedCategory, heading }: { fixedCategory?: string
         <aside className="hidden lg:block" aria-label={t("filters")}>
           <div className="sticky top-28 rounded-card border border-hair p-5">
             <h2 className="mb-5 text-[16px] font-semibold">{t("filters")}</h2>
-            <Filters params={params} categories={categories} fixedCategory={fixedCategory} onApply={apply} idPrefix="side" />
+            <Filters key={spKey} params={params} categories={categories} fixedCategory={fixedCategory} onApply={apply} idPrefix="side" />
           </div>
         </aside>
 
@@ -286,7 +286,7 @@ export function ResultsView({ fixedCategory, heading }: { fixedCategory?: string
                 <Icon name="x" />
               </button>
             </div>
-            <Filters params={params} categories={categories} fixedCategory={fixedCategory} onApply={apply} idPrefix="drawer" />
+            <Filters key={spKey} params={params} categories={categories} fixedCategory={fixedCategory} onApply={apply} idPrefix="drawer" />
           </div>
         </div>
       )}

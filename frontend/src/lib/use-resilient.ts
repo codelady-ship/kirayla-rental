@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ApiError, COLD_START_MS } from "./api";
+import { API_CONFIGURED, ApiError, COLD_START_MS } from "./api";
 import { useDemoMode } from "@/components/providers";
 
 /**
@@ -11,6 +11,7 @@ import { useDemoMode } from "@/components/providers";
  *    and a banner says so;
  *  - the real request keeps retrying in the background and silently replaces the snapshot when it lands.
  * A real HTTP error (404, 400…) is NOT masked by demo data.
+ * With no API configured at all, the snapshot is shown at once and nothing is requested.
  */
 export function useResilient<T>(key: string, fetcher: () => Promise<T>, fallback: () => T | null) {
   const [state, setState] = useState<{ key: string; data: T | null; error: ApiError | null; demo: boolean }>({
@@ -39,6 +40,13 @@ export function useResilient<T>(key: string, fetcher: () => Promise<T>, fallback
       setState({ key, data: fb, error: null, demo: true });
       setDemo(true);
     };
+    if (!API_CONFIGURED) {
+      const none = setTimeout(showFallback, 0);
+      return () => {
+        alive = false;
+        clearTimeout(none);
+      };
+    }
     const timer = setTimeout(showFallback, COLD_START_MS);
 
     const attempt = (n: number) => {
