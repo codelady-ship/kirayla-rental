@@ -18,7 +18,7 @@ export function Footer({ tone, locale }: { tone: "discovery" | "market"; locale:
   const tn = useTranslations("Nav");
   const dark = tone === "discovery";
   // same content edges as the header of the zone: 1200px on the home page, 1440px in the market
-  const wrap = dark ? "max-w-[1200px] lg:px-8" : "max-w-[1440px] lg:px-10";
+  const wrap = dark ? "max-w-[1200px] lg:px-8 2xl:max-w-[1440px]" : "max-w-[1440px] lg:px-10";
   const head = `mb-2 text-[14px] font-semibold ${dark ? "text-white" : "text-hof"}`;
   const link = `inline-flex min-h-11 min-w-11 items-center text-[14px] transition-colors ${dark ? "text-[#d6d1ce] hover:text-white" : "text-foggy hover:text-hof"}`;
 

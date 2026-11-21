@@ -81,6 +81,9 @@ jobs:
             -H 'Content-Type: application/json' -d "{\"listingId\":5,\"startDate\":\"$FROM\",\"endDate\":\"$TO\"}")" = "201"
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/bookings -H "Authorization: Bearer $USER" \
             -H 'Content-Type: application/json' -d "{\"listingId\":5,\"startDate\":\"$FROM\",\"endDate\":\"$TO\"}")" = "409"
+          # dates survive the round trip unchanged (container OS clock is UTC, the app zone is Asia/Baku)
+          test "$(curl -sf http://localhost:8080/api/bookings/mine -H "Authorization: Bearer $USER" | jq -r '.[0].startDate + " " + .[0].endDate')" = "$FROM $TO"
+          test "$(curl -sf http://localhost:8080/api/listings/5 | jq --arg f "$FROM" --arg t "$TO" '[.unavailable[] | select(.from == $f and .to == $t)] | length')" = "1"
           # CORS: only the configured origin
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/categories -H 'Origin: https://evil.test')" = "403"
           curl -s -D - -o /dev/null http://localhost:8080/api/categories -H 'Origin: https://example.test' | grep -qi '^access-control-allow-origin: https://example.test'

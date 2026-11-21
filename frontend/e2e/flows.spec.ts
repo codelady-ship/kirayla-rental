@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const API = process.env.API_URL ?? "http://localhost:8080";
 const run = Date.now().toString(36);
-const renter = { name: "Test Kirayəçi", email: `e2e-${run}@kirayla.test`, password: "Sinaq12345" };
+const renter = { name: `Test Kirayəçi ${run}`, email: `e2e-${run}@kirayla.test`, password: "Sinaq12345" };
 const title = `E2E dron ${run}`;
 
 function iso(offset: number) {
@@ -149,7 +149,7 @@ test.describe.serial("Kirayla flows", () => {
     expect(errors).toEqual([]);
   });
 
-  test("renter books with the calendar; overlapping request is refused", async ({ page }) => {
+  test("renter books with the calendar; overlapping request is refused", async ({ page, request }) => {
     const errors = watchConsole(page);
     await login(page, renter.email, renter.password);
     await page.goto("/az/listing/5"); // Rəşad's studio lights (min 1 day)
@@ -159,15 +159,23 @@ test.describe.serial("Kirayla flows", () => {
     await expect(page.locator("#book").getByText("Ödəniləcək (depozitlə)")).toBeVisible();
     await page.locator("#book").getByRole("button", { name: "Bron et" }).click();
     await page.waitForURL(/\/checkout\/5\?/);
-    await page.getByLabel("Ev sahibinə mesaj (istəyə bağlı)").fill("Salam! Sabah götürə bilərəm.");
+    await page.locator("#booking-message").fill("Salam! Sabah götürə bilərəm.");
     await page.getByRole("button", { name: "Sorğu göndər" }).click();
     await page.waitForURL(/\/trips$/);
     await expect(page.getByText("Studiya işıq").first()).toBeVisible();
 
-    // same dates again → server-side overlap check answers 409
+    // same dates again: the checkout page refuses them up front…
     await page.goto(`/az/checkout/5?from=${iso(0)}&to=${iso(1)}`);
-    await page.getByRole("button", { name: "Sorğu göndər" }).click();
-    await expect(page.getByText("Bu tarixlər artıq tutulub")).toBeVisible();
+    await expect(page.getByText("Bu tarixlərdə əşya məşğuldur")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sorğu göndər" })).toBeDisabled();
+    // …and the server-side overlap check answers 409 to a direct request
+    const tokens = await page.evaluate(() => JSON.parse(localStorage.getItem("kirayla.auth")!) as { accessToken: string });
+    const again = await request.post(`${API}/api/bookings`, {
+      headers: { Authorization: `Bearer ${tokens.accessToken}` },
+      data: { listingId: 5, startDate: iso(0), endDate: iso(1) },
+    });
+    expect(again.status()).toBe(409);
+    expect((await again.json()).code).toBe("BOOKING_CONFLICT");
 
     // …and a search for those days no longer offers the item
     await page.goto(`/az/c/foto-video?from=${iso(0)}&to=${iso(1)}`);

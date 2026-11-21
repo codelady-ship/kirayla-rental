@@ -18,6 +18,6 @@ COPY --from=build /workspace/target/kirayla-api.jar app.jar
 USER spring
 ENV SPRING_PROFILES_ACTIVE=prod \
     STORAGE_DIR=/app/data/uploads \
-    JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+UseSerialGC -Xss512k"
+    JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+UseSerialGC -Xss512k -Duser.timezone=Asia/Baku"
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]

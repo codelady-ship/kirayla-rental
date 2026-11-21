@@ -53,7 +53,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <main id="main" className="animate-zone-in">
             <DiscoveryHero featured={featured} categories={categories} />
 
-            <div className="mx-auto max-w-[1200px] space-y-16 px-4 py-12 sm:px-6 lg:space-y-20 lg:px-8">
+            <div className="mx-auto max-w-[1200px] space-y-16 2xl:max-w-[1440px] px-4 py-12 sm:px-6 lg:space-y-20 lg:px-8">
               {bandCats.map((c, i) => (
                 <CategoryBand key={c.id} category={c} items={top.filter((l) => l.category.id === c.id)} locale={locale} flip={i % 2 === 1} />
               ))}

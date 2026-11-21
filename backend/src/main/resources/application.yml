@@ -10,7 +10,6 @@ spring:
     properties:
       hibernate:
         default_batch_fetch_size: 50
-        jdbc.time_zone: UTC
   flyway:
     enabled: true
     locations: classpath:db/migration

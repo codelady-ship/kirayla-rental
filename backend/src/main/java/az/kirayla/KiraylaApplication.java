@@ -13,11 +13,9 @@ public class KiraylaApplication {
      */
     public static final String ZONE = "Asia/Baku";
 
-    static {
-        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone(ZONE));
-    }
-
     public static void main(String[] args) {
+        // must happen before any JDBC / Hibernate class is loaded, so the whole process agrees on one zone
+        java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone(ZONE));
         SpringApplication.run(KiraylaApplication.class, args);
     }
 }

@@ -71,7 +71,7 @@ export function DiscoveryHero({ featured, categories }: { featured: ListingCard[
   };
 
   return (
-    <section className="mx-auto max-w-[1200px] px-4 pb-6 pt-2 sm:px-6 lg:pt-10" aria-labelledby="hero-title">
+    <section className="mx-auto max-w-[1200px] px-4 pb-6 2xl:max-w-[1440px] pt-2 sm:px-6 lg:pt-10" aria-labelledby="hero-title">
       {/* constellation */}
       <div aria-label={t("constellationLabel")} role="group" className="relative mx-auto hidden h-[250px] max-w-[1040px] [--k:0.7] sm:block md:h-[270px] md:[--k:0.82] xl:h-[300px] xl:[--k:1]">
         {featured.slice(0, SPOTS.length).map((l, i) => (

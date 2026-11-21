@@ -134,7 +134,7 @@ export function DashShell({ kind, children }: { kind: "host" | "admin"; children
             </p>
           )}
 
-          <main id="main" className="mx-auto max-w-[1200px] animate-dash-in px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
+          <main id="main" className="mx-auto max-w-[1200px] animate-dash-in 2xl:max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
             {!ready || !user ? (
               <div className="flex justify-center py-24 text-ash">
                 <Spinner />
