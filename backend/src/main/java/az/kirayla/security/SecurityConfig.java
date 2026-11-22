@@ -49,7 +49,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/refresh", "/api/auth/logout").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/categories", "/api/listings", "/api/listings/{id}",
+                        .requestMatchers(HttpMethod.GET, "/api/categories", "/api/listings", "/api/listings/highlights", "/api/listings/{id}",
                                 "/api/users/{id}", "/api/uploads/**").permitAll()
                         .requestMatchers("/actuator/health/**", "/actuator/health", "/v3/api-docs/**",
                                 "/swagger-ui/**", "/swagger-ui.html", "/error").permitAll()

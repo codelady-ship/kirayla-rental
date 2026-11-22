@@ -8,6 +8,7 @@ import az.kirayla.web.dto.Dtos.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -47,6 +49,17 @@ public class ListingController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size) {
         return listings.search(new ListingSpecs.Filter(q, category, city, minPrice, maxPrice, from, to), sort, page, size);
+    }
+
+    /**
+     * The home page's floating cards: the most rented and the newest active listings, alternating (see
+     * {@link ListingService#highlights}). Public catalogue data only; browsers and the site may cache it a minute.
+     */
+    @GetMapping("/api/listings/highlights")
+    public ResponseEntity<List<ListingCard>> highlights(@RequestParam(defaultValue = "7") int size) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(Duration.ofSeconds(60)).cachePublic())
+                .body(listings.highlights(size));
     }
 
     @GetMapping("/api/listings/{id}")

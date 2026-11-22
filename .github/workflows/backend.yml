@@ -68,6 +68,8 @@ jobs:
           set -euo pipefail
           test "$(curl -sf 'http://localhost:8080/api/listings?size=1' | jq .totalElements)" = "40"
           test "$(curl -sf http://localhost:8080/api/categories | jq length)" = "10"
+          # the home page's floating cards: the highlights query runs on PostgreSQL and fills all 7 from the seed
+          test "$(curl -sf http://localhost:8080/api/listings/highlights | jq length)" = "7"
           test "$(curl -sf 'http://localhost:8080/api/listings?city=Bak%C4%B1&maxPrice=20&sort=price_asc' | jq '.content | length > 0')" = "true"
           TOKEN=$(curl -sf -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' \
             -d '{"email":"demo-admin@kirayla.az","password":"Demo1234!"}' | jq -r .accessToken)
