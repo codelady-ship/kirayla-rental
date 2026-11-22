@@ -69,6 +69,46 @@ public class ListingService {
         return PageResponse.of(listings.findAll(ListingSpecs.search(filter), pr), mapper::card);
     }
 
+    /** Bookings that count as a rental for {@link #highlights}: accepted by the host or completed. */
+    static final Set<BookingStatus> RENTED = Set.of(BookingStatus.ACCEPTED, BookingStatus.COMPLETED);
+    static final int MAX_HIGHLIGHTS = 12;
+
+    /**
+     * The home page's floating cards. Rule: active listings with a photo, alternating the most rented one
+     * (most accepted + completed bookings; ties: the newer listing) and the newest one, starting with the most
+     * rented, never the same listing twice; when one list runs out the other fills the rest.
+     */
+    @Transactional(readOnly = true)
+    public List<ListingCard> highlights(int size) {
+        int n = Math.min(Math.max(size, 1), MAX_HIGHLIGHTS);
+        // enough candidates from each list that duplicates can never leave a slot empty
+        PageRequest top = PageRequest.of(0, n);
+        List<Long> ids = alternate(bookings.mostRentedListingIds(RENTED, ListingStatus.ACTIVE, top),
+                listings.newestWithPhotoIds(ListingStatus.ACTIVE, top), n);
+        java.util.Map<Long, Listing> byId = new java.util.HashMap<>();
+        listings.findAllById(ids).forEach(l -> byId.put(l.getId(), l));
+        return ids.stream().map(byId::get).filter(java.util.Objects::nonNull).map(mapper::card).toList();
+    }
+
+    /**
+     * Takes turns: the next not yet chosen id of {@code a}, then of {@code b}, and so on, up to {@code n};
+     * once one list is used up the other fills the rest.
+     */
+    static List<Long> alternate(List<Long> a, List<Long> b, int n) {
+        java.util.LinkedHashSet<Long> out = new java.util.LinkedHashSet<>();
+        int i = 0, j = 0;
+        boolean turnA = true;
+        while (out.size() < n && (i < a.size() || j < b.size())) {
+            if (turnA) {
+                while (i < a.size() && !out.add(a.get(i++))) { /* already chosen: skip */ }
+            } else {
+                while (j < b.size() && !out.add(b.get(j++))) { /* already chosen: skip */ }
+            }
+            turnA = !turnA;
+        }
+        return List.copyOf(out);
+    }
+
     @Transactional(readOnly = true)
     public ListingDetail detail(Long id) {
         Listing l = listings.findById(id).orElseThrow(() -> ApiException.notFound("Listing"));

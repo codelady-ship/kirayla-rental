@@ -29,6 +29,14 @@ public interface ListingRepository extends JpaRepository<Listing, Long>, JpaSpec
 
     long countByStatus(ListingStatus status);
 
+    /** Listings in {@code status} that have at least one photo, newest first (ties: higher id first). */
+    @Query("""
+            select l.id from Listing l
+            where l.status = :status and exists (select p.id from ListingPhoto p where p.listing = l)
+            order by l.createdAt desc, l.id desc
+            """)
+    List<Long> newestWithPhotoIds(@Param("status") ListingStatus status, Pageable pageable);
+
     long countByCategoryId(Long categoryId);
 
     long countByCategoryIdAndStatus(Long categoryId, ListingStatus status);

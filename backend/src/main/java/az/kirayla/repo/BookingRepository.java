@@ -2,6 +2,7 @@ package az.kirayla.repo;
 
 import az.kirayla.domain.Booking;
 import az.kirayla.domain.BookingStatus;
+import az.kirayla.domain.ListingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -64,6 +65,20 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     BigDecimal sumRentalTotal(@Param("statuses") Collection<BookingStatus> statuses);
 
     Page<Booking> findByStatus(BookingStatus status, Pageable pageable);
+
+    /**
+     * Listings by how often they were rented (bookings in the given statuses), most first; ties: the newer
+     * listing first. Only listings in {@code listingStatus} that have at least one photo.
+     */
+    @Query("""
+            select b.listing.id from Booking b
+            where b.status in :statuses and b.listing.status = :listingStatus
+              and exists (select p.id from ListingPhoto p where p.listing = b.listing)
+            group by b.listing.id
+            order by count(b) desc, b.listing.id desc
+            """)
+    List<Long> mostRentedListingIds(@Param("statuses") Collection<BookingStatus> statuses,
+                                    @Param("listingStatus") ListingStatus listingStatus, Pageable pageable);
 
     @Query("select b.listing.id from Booking b where b.id = :id")
     java.util.Optional<Long> findListingId(@Param("id") Long id);
