@@ -74,6 +74,9 @@ export default async function LocaleLayout({ children, params }: { children: Rea
 
   return (
     <html lang={locale} className={`${inter.variable} antialiased`}>
+      <head>
+        <meta name="darkreader-lock" />
+      </head>
       <body className="min-h-dvh">
         <a href="#main" className="sr-only z-[200] rounded-full bg-black px-4 py-3 text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
           {t("skip")}
