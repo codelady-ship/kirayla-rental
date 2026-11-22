@@ -95,9 +95,9 @@ class HighlightsTest extends IntegrationTestBase {
 
     private Account demoHost() throws Exception {
         JsonNode body = read(mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content(json.writeValueAsString(Map.of("email", "rashad@kirayla.az", "password", "Demo1234!"))))
+                .content(json.writeValueAsString(Map.of("email", "rashad@share.az", "password", "Demo1234!"))))
                 .andExpect(status().isOk()));
-        return new Account(body.at("/user/id").asLong(), "rashad@kirayla.az", body.get("accessToken").asText());
+        return new Account(body.at("/user/id").asLong(), "rashad@share.az", body.get("accessToken").asText());
     }
 
     @Test
