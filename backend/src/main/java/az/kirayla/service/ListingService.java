@@ -73,18 +73,25 @@ public class ListingService {
     static final Set<BookingStatus> RENTED = Set.of(BookingStatus.ACCEPTED, BookingStatus.COMPLETED);
     static final int MAX_HIGHLIGHTS = 12;
 
+    /** A new listing waits this long before it can appear among the home page's "newest" cards. */
+    static final java.time.Duration NEWEST_MIN_AGE = java.time.Duration.ofHours(1);
+
     /**
      * The home page's floating cards. Rule: active listings with a photo, alternating the most rented one
-     * (most accepted + completed bookings; ties: the newer listing) and the newest one, starting with the most
-     * rented, never the same listing twice; when one list runs out the other fills the rest.
+     * (most accepted + completed bookings; ties: the newer listing, then the higher id) and the newest one,
+     * starting with the most rented, never the same listing twice; when one list runs out the other fills the
+     * rest. Listings visitors add through the shared demo accounts never appear (their seeded catalogue does);
+     * a "newest" card must also be at least {@link #NEWEST_MIN_AGE} old and have no open report.
      */
     @Transactional(readOnly = true)
     public List<ListingCard> highlights(int size) {
         int n = Math.min(Math.max(size, 1), MAX_HIGHLIGHTS);
         // enough candidates from each list that duplicates can never leave a slot empty
         PageRequest top = PageRequest.of(0, n);
-        List<Long> ids = alternate(bookings.mostRentedListingIds(RENTED, ListingStatus.ACTIVE, top),
-                listings.newestWithPhotoIds(ListingStatus.ACTIVE, top), n);
+        long firstVisitorId = az.kirayla.demo.SeedData.FIRST_VISITOR_ID;
+        List<Long> ids = alternate(bookings.mostRentedListingIds(RENTED, ListingStatus.ACTIVE, firstVisitorId, top),
+                listings.newestHighlightIds(ListingStatus.ACTIVE, LocalDateTime.now().minus(NEWEST_MIN_AGE),
+                        firstVisitorId, ReportStatus.OPEN, top), n);
         java.util.Map<Long, Listing> byId = new java.util.HashMap<>();
         listings.findAllById(ids).forEach(l -> byId.put(l.getId(), l));
         return ids.stream().map(byId::get).filter(java.util.Objects::nonNull).map(mapper::card).toList();
