@@ -72,7 +72,7 @@ export function Footer({ tone, locale }: { tone: "discovery" | "market"; locale:
               </li>
             )}
             <li>
-              <a href="https://github.com/codelady-ship/share-rental" className={link} rel="noopener">
+              <a href="https://github.com/codelady-ship/kirayla-rental" className={link} rel="noopener">
                 {t("source")}
               </a>
             </li>

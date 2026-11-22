@@ -28,7 +28,7 @@ ${cats}
 - [Sitemap](${SITE_URL}/sitemap.xml)
 
 ## Source
-- [GitHub repository](https://github.com/codelady-ship/share-rental)
+- [GitHub repository](https://github.com/codelady-ship/kirayla-rental)
 `;
   return new Response(body, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
 }

@@ -99,7 +99,7 @@ export function Profile() {
       <aside>
         <div className="flex flex-col items-center rounded-[20px] p-8 text-center shadow-[0_6px_20px_rgba(0,0,0,0.12)]">
           <Avatar name={user.name} src={user.avatarUrl} size={104} />
-          <p className="mt-4 text-[24px] font-semibold leading-tight">{user.name}</p>
+          <p className="mt-4 text-[24px] font-semibold leading-tight" translate="no">{user.name}</p>
           <p className="text-[14px] text-foggy">{t(`role_${user.role}`)}</p>
           <p className="mt-3 text-[14px] text-foggy">{t.rich("member", { date: fmtDate(user.joinedAt, locale, { month: "long", year: "numeric" }), brand })}</p>
         </div>

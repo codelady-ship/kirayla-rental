@@ -155,7 +155,7 @@ export function AdminUsers() {
                   <div className="flex items-center gap-3">
                     <Avatar name={u.name} size={36} className="!bg-obsidian" />
                     <div className="min-w-0">
-                      <p className="truncate text-ivory">{u.name}</p>
+                      <p className="truncate text-ivory" translate="no">{u.name}</p>
                       <p className="truncate text-[12px] text-ash" translate="no">{u.email}</p>
                     </div>
                   </div>

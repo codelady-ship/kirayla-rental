@@ -139,7 +139,7 @@ Do the steps in this order: the web app needs the API's URL, and the API needs t
 
 **1. Web → Vercel (browse-only at first)**
 
-1. Import `codelady-ship/share-rental` and set **Root Directory = `frontend`** (framework preset: Next.js, default build and install commands).
+1. Import `codelady-ship/kirayla-rental` and set **Root Directory = `frontend`** (framework preset: Next.js, default build and install commands).
 2. Set one variable for now: `NEXT_PUBLIC_SITE_URL=https://<the domain Vercel gives the project>` (no trailing slash). Do **not** set `NEXT_PUBLIC_API_URL` yet.
 3. Deploy and note the production domain; it is the CORS origin in step 3.
 
