@@ -75,7 +75,7 @@ export function UserMenu({ tone = "light", align = "right", avatarOnlyOnPhones =
         >
           {user && (
             <div className={`px-4 pb-2 pt-1 text-[13px] ${dark ? "text-ash" : "text-foggy"}`}>
-              <div className={`truncate text-[15px] font-medium ${dark ? "text-ivory" : "text-hof"}`}>{user.name}</div>
+              <div className={`truncate text-[15px] font-medium ${dark ? "text-ivory" : "text-hof"}`} translate="no">{user.name}</div>
               <div className="truncate" translate="no">{user.email}</div>
             </div>
           )}

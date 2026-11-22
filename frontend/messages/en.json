@@ -1,8 +1,8 @@
 {
   "Meta": {
-    "title": "Kirayla — rent things by the day in Baku, Ganja and Sumgait",
+    "title": "Share — rent things by the day in Baku, Ganja and Sumgait",
     "description": "Cameras, drills, tents, bikes, consoles and dresses — rent from your neighbours by the day, or list your own things and earn.",
-    "ogAlt": "Kirayla — rent and lend everyday things by the day"
+    "ogAlt": "Share — rent and lend everyday things by the day"
   },
   "Common": {
     "skip": "Skip to main content",
@@ -224,7 +224,7 @@
     "city": "City",
     "bio": "About",
     "saved": "Profile updated",
-    "member": "On <brand>Kirayla</brand> since {date}",
+    "member": "On <brand>Share</brand> since {date}",
     "quick": "Shortcuts",
     "role_USER": "User",
     "role_ADMIN": "Admin"
@@ -232,7 +232,7 @@
   "Auth": {
     "loginTitle": "Welcome back",
     "loginSub": "Log in to see your rentals, messages and dashboard.",
-    "registerTitle": "Join <brand>Kirayla</brand>",
+    "registerTitle": "Join <brand>Share</brand>",
     "registerSub": "One account to rent things and to rent out your own.",
     "name": "Full name",
     "email": "Email",
@@ -382,7 +382,7 @@
     "hiddenInDemo": "Hidden from the demo admin"
   },
   "Footer": {
-    "about": "<brand>Kirayla</brand> is an open marketplace where people in Azerbaijan rent things to each other. A portfolio project: no real payments.",
+    "about": "<brand>Share</brand> is an open marketplace where people in Azerbaijan rent things to each other. A portfolio project: no real payments.",
     "explore": "Explore",
     "host": "For hosts",
     "company": "Project",
@@ -390,7 +390,7 @@
     "api": "API docs",
     "source": "Source code",
     "credits": "Photos: <brand>Wikimedia Commons</brand> authors (CC0 / CC BY / CC BY-SA), credited on each listing.",
-    "rights": "© {year} <brand>Kirayla</brand>. Portfolio demo."
+    "rights": "© {year} <brand>Share</brand>. Portfolio demo."
   },
   "NotFound": {
     "title": "Page not found",

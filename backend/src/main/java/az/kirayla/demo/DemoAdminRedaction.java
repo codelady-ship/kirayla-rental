@@ -124,7 +124,7 @@ public class DemoAdminRedaction implements ResponseBodyAdvice<Object> {
         return com.fasterxml.jackson.databind.node.NullNode.getInstance();
     }
 
-    /** {@code aysel@kirayla.az} → {@code a***@kirayla.az}; text without an address is returned unchanged. */
+    /** {@code aysel@share.az} → {@code a***@share.az}; text without an address is returned unchanged. */
     static String maskEmails(String s) {
         Matcher m = EMAIL.matcher(s);
         return m.find() ? m.replaceAll("$1***@$2") : s;

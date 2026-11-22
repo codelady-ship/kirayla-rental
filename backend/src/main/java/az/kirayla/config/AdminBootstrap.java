@@ -41,7 +41,7 @@ public class AdminBootstrap implements ApplicationRunner {
         if (users.existsByEmailIgnoreCase(email.trim())) return;
         User admin = new User();
         admin.setEmail(email.trim().toLowerCase());
-        admin.setFullName("Kirayla Admin");
+        admin.setFullName("Share Admin");
         admin.setCity("Bakı");
         admin.setRole(Role.ADMIN);
         admin.setPasswordHash(encoder.encode(password));

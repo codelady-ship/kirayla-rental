@@ -10,5 +10,5 @@ kirayla:
     # obviously fake, local-only value; prod requires the JWT_SECRET env var
     secret: ${JWT_SECRET:dev-only-not-a-secret-kirayla-local-0000}
   admin:
-    email: ${ADMIN_EMAIL:admin@kirayla.local}
+    email: ${ADMIN_EMAIL:admin@share.local}
     password: ${ADMIN_PASSWORD:admin-dev-only}

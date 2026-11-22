@@ -1,8 +1,8 @@
 {
   "Meta": {
-    "title": "Kirayla — Bakı, Gəncə və Sumqayıtda əşya kirayəsi",
+    "title": "Share — Bakı, Gəncə və Sumqayıtda əşya kirayəsi",
     "description": "Fotoaparat, drel, çadır, velosiped, konsol və don — qonşundan günlük kirayə götür, öz əşyanı kirayə verib qazan.",
-    "ogAlt": "Kirayla — əşyaları günlük kirayə ver və götür"
+    "ogAlt": "Share — əşyaları günlük kirayə ver və götür"
   },
   "Common": {
     "skip": "Əsas məzmuna keç",
@@ -224,7 +224,7 @@
     "city": "Şəhər",
     "bio": "Haqqında",
     "saved": "Profil yeniləndi",
-    "member": "{date} tarixindən <brand>Kirayla</brand>da",
+    "member": "{date} tarixindən <brand>Share</brand>-də",
     "quick": "Qısa keçidlər",
     "role_USER": "İstifadəçi",
     "role_ADMIN": "Admin"
@@ -232,7 +232,7 @@
   "Auth": {
     "loginTitle": "Yenidən xoş gördük",
     "loginSub": "Kirayələrini, mesajlarını və panelini görmək üçün daxil ol.",
-    "registerTitle": "<brand>Kirayla</brand>ya qoşul",
+    "registerTitle": "<brand>Share</brand>-ə qoşul",
     "registerSub": "Bir hesabla həm kirayə götür, həm də öz əşyanı kirayə ver.",
     "name": "Ad, soyad",
     "email": "E-poçt",
@@ -382,7 +382,7 @@
     "hiddenInDemo": "Demo admin üçün gizlədilib"
   },
   "Footer": {
-    "about": "<brand>Kirayla</brand> — Azərbaycanda insanların bir-birinə əşya kirayə verdiyi açıq bazar. Portfolio layihəsidir: ödənişlər real deyil.",
+    "about": "<brand>Share</brand> — Azərbaycanda insanların bir-birinə əşya kirayə verdiyi açıq bazar. Portfolio layihəsidir: ödənişlər real deyil.",
     "explore": "Kəşf et",
     "host": "Ev sahibləri üçün",
     "company": "Layihə",
@@ -390,7 +390,7 @@
     "api": "API sənədləri",
     "source": "Mənbə kodu",
     "credits": "Fotolar: <brand>Wikimedia Commons</brand> müəllifləri (CC0 / CC BY / CC BY-SA), hər elanda göstərilir.",
-    "rights": "© {year} <brand>Kirayla</brand>. Portfolio demosu."
+    "rights": "© {year} <brand>Share</brand>. Portfolio demosu."
   },
   "NotFound": {
     "title": "Səhifə tapılmadı",

@@ -14,7 +14,7 @@
     <artifactId>kirayla-api</artifactId>
     <version>0.1.0</version>
     <name>kirayla-api</name>
-    <description>Kirayla — peer-to-peer rental marketplace API (Spring Boot)</description>
+    <description>Share — peer-to-peer rental marketplace API (Spring Boot)</description>
 
     <properties>
         <java.version>21</java.version>

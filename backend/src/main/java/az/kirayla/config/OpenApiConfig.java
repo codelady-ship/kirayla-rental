@@ -13,7 +13,7 @@ public class OpenApiConfig {
     @Bean
     OpenAPI kiraylaOpenApi() {
         return new OpenAPI()
-                .info(new Info().title("Kirayla API").version("0.1.0")
+                .info(new Info().title("Share API").version("0.1.0")
                         .description("Peer-to-peer rental marketplace for Azerbaijan. "
                                 + "Log in via POST /api/auth/login, then click Authorize and paste the accessToken."))
                 .components(new Components().addSecuritySchemes("bearer",

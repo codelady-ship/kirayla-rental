@@ -36,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 class DemoProtectionTest extends IntegrationTestBase {
     private static final String DEMO_PASSWORD = "Demo1234!";
-    private static final List<String> SEED_LOGINS = List.of("aysel@kirayla.az", "rashad@kirayla.az", "demo-admin@kirayla.az");
+    private static final List<String> SEED_LOGINS = List.of("aysel@share.az", "rashad@share.az", "demo-admin@share.az");
     @Autowired DemoCleanup cleanup;
     @Autowired JdbcTemplate sql;
     @Autowired DataSource dataSource;
@@ -77,20 +77,20 @@ class DemoProtectionTest extends IntegrationTestBase {
         mvc.perform(auth(post("/api/listings/" + listing + "/reports"), visitor).contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(Map.of("reason", reason)))).andExpect(status().isCreated());
 
-        Account admin = demo("demo-admin@kirayla.az");
+        Account admin = demo("demo-admin@share.az");
         String local = visitor.email().substring(0, visitor.email().indexOf('@'));
 
         // users: e-mails masked, and the masked field cannot be probed through ?q=
         String usersJson = body(mvc.perform(auth(get("/api/admin/users").param("size", "100"), admin)));
         assertThat(usersJson).doesNotContain(visitor.email()).doesNotContain(host.email()).doesNotContain(local);
-        assertThat(usersJson).contains(local.charAt(0) + "***@test.kirayla.az");
+        assertThat(usersJson).contains(local.charAt(0) + "***@test.share.az");
         assertThat(usersJson).contains("\"name\":\"Visitor\"");
         mvc.perform(auth(get("/api/admin/users").param("q", local), admin))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.totalElements").value(0));
-        mvc.perform(auth(get("/api/admin/users").param("q", "test.kirayla.az"), admin))
+        mvc.perform(auth(get("/api/admin/users").param("q", "test.share.az"), admin))
                 .andExpect(jsonPath("$.totalElements").value(0));
         // its own profile is masked too
-        mvc.perform(auth(get("/api/auth/me"), admin)).andExpect(jsonPath("$.email").value("d***@kirayla.az"));
+        mvc.perform(auth(get("/api/auth/me"), admin)).andExpect(jsonPath("$.email").value("d***@share.az"));
 
         // bookings: the renter's private note to the host is gone, list and single item
         String bookingsJson = body(mvc.perform(auth(get("/api/admin/bookings").param("size", "100"), admin)));
@@ -142,8 +142,8 @@ class DemoProtectionTest extends IntegrationTestBase {
 
     @Test
     void onlyTheThreeDemoAccountsCanSignIn() throws Exception {
-        for (String email : List.of("leyla@kirayla.az", "kamran@kirayla.az", "fidan@kirayla.az", "tural@kirayla.az",
-                "nigar@kirayla.az", "elvin@kirayla.az", "gunel@kirayla.az", "sebine@kirayla.az", "orxan@kirayla.az")) {
+        for (String email : List.of("leyla@share.az", "kamran@share.az", "fidan@share.az", "tural@share.az",
+                "nigar@share.az", "elvin@share.az", "gunel@share.az", "sebine@share.az", "orxan@share.az")) {
             for (String password : List.of(DEMO_PASSWORD, "!no-login")) {
                 mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                                 .content(json.writeValueAsString(Map.of("email", email, "password", password))))
@@ -151,15 +151,15 @@ class DemoProtectionTest extends IntegrationTestBase {
                         .andExpect(jsonPath("$.code").value("BAD_CREDENTIALS"));
             }
         }
-        demo("aysel@kirayla.az");
-        demo("rashad@kirayla.az");
-        demo("demo-admin@kirayla.az");
+        demo("aysel@share.az");
+        demo("rashad@share.az");
+        demo("demo-admin@share.az");
     }
 
     @Test
     void demoHostAndRenterCannotChangeSeedDataButCanPlayWithTheirOwn() throws Exception {
-        Account host = demo("rashad@kirayla.az");
-        Account renter = demo("aysel@kirayla.az");
+        Account host = demo("rashad@share.az");
+        Account renter = demo("aysel@share.az");
         JsonNode seeded = seededListingOf(host);
         long seededId = seeded.get("id").asLong();
         assertThat(seededId).isLessThan(10_000);
@@ -205,8 +205,8 @@ class DemoProtectionTest extends IntegrationTestBase {
 
     @Test
     void cleanupRemovesVisitorDataOnDemoAccountsAndRestoresSeededBookings() throws Exception {
-        Account host = demo("rashad@kirayla.az");
-        Account renter = demo("aysel@kirayla.az");
+        Account host = demo("rashad@share.az");
+        Account renter = demo("aysel@share.az");
         Account visitor = register("Passerby");
         Account owner = register("Keeper");
 
@@ -254,7 +254,7 @@ class DemoProtectionTest extends IntegrationTestBase {
      */
     @Test
     void scheduledRunRestoresSeededRatingsAndIsAtomic() throws Exception {
-        Account renter = demo("aysel@kirayla.az");
+        Account renter = demo("aysel@share.az");
         Map<String, Object> target = sql.queryForList("""
                 SELECT b.id AS booking, b.listing_id AS listing FROM bookings b JOIN listings l ON l.id = b.listing_id
                 WHERE b.renter_id = ? AND b.status = 'COMPLETED' AND b.id < 10000 AND l.id < 10000 AND l.review_count > 0
@@ -377,7 +377,7 @@ class DemoProtectionTest extends IntegrationTestBase {
         String shared = "198.51.100.40";   // e.g. a proxy hop many visitors arrive through
         // one visitor's wrong passwords do not lock a demo account for the others behind the same address
         for (int i = 0; i < 12; i++) {
-            assertThat(loginFrom(shared, i % 2 == 0 ? "demo-admin@kirayla.az" : "Demo-Admin@Kirayla.AZ", "wrong-" + i)).isEqualTo(401);
+            assertThat(loginFrom(shared, i % 2 == 0 ? "demo-admin@share.az" : "Demo-Admin@Share.AZ", "wrong-" + i)).isEqualTo(401);
         }
         for (String email : SEED_LOGINS) assertThat(loginFrom(shared, email, DEMO_PASSWORD)).as(email).isEqualTo(200);
 
@@ -385,13 +385,13 @@ class DemoProtectionTest extends IntegrationTestBase {
         Account victim = register("Locked");
         for (int i = 0; i < 8; i++) assertThat(loginFrom(shared, victim.email(), "nope")).isEqualTo(401);
         assertThat(loginFrom(shared, victim.email(), "Secret123!")).isEqualTo(429);
-        assertThat(loginFrom(shared, "demo-admin@kirayla.az", DEMO_PASSWORD)).isEqualTo(200);
+        assertThat(loginFrom(shared, "demo-admin@share.az", DEMO_PASSWORD)).isEqualTo(200);
 
         // the per-address limit (40 failures) still applies to the demo accounts: 20 so far, 20 more
         for (int i = 0; i < 20; i++) assertThat(loginFrom(shared, SEED_LOGINS.get(i % 3), "wrong")).as("failure " + (21 + i)).isEqualTo(401);
         for (String email : SEED_LOGINS) assertThat(loginFrom(shared, email, DEMO_PASSWORD)).as(email).isEqualTo(429);
         // another address is unaffected
-        assertThat(loginFrom("198.51.100.41", "demo-admin@kirayla.az", DEMO_PASSWORD)).isEqualTo(200);
+        assertThat(loginFrom("198.51.100.41", "demo-admin@share.az", DEMO_PASSWORD)).isEqualTo(200);
     }
 
     @Test
