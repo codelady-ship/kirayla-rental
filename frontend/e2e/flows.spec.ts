@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const API = process.env.API_URL ?? "http://localhost:8080";
 const run = Date.now().toString(36);
-const renter = { name: `Test Kirayəçi ${run}`, email: `e2e-${run}@kirayla.test`, password: "Sinaq12345" };
+const renter = { name: `Test Kirayəçi ${run}`, email: `e2e-${run}@share.test`, password: "Sinaq12345" };
 const title = `E2E dron ${run}`;
 
 function iso(offset: number) {
@@ -39,11 +39,11 @@ async function logout(page: Page) {
   await page.evaluate(() => localStorage.removeItem("kirayla.auth"));
 }
 
-test.describe.serial("Kirayla flows", () => {
+test.describe.serial("Share flows", () => {
   test("home → category → listing", async ({ page }) => {
     const errors = watchConsole(page);
     await page.goto("/az");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("kirayla");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("share");
     await page.getByRole("navigation", { name: "Kateqoriyalar" }).getByRole("link", { name: "Kempinq" }).click();
     await expect(page).toHaveURL(/\/az\/c\/kempinq/);
     await expect(page.getByRole("heading", { level: 1, name: "Kempinq" })).toBeVisible();
@@ -139,7 +139,7 @@ test.describe.serial("Kirayla flows", () => {
     await expect(page.locator("p", { hasText: hello })).toBeVisible();
 
     await logout(page);
-    await login(page, "rashad@kirayla.az");
+    await login(page, "rashad@share.az");
     await page.goto("/az/messages");
     await page.getByRole("link", { name: new RegExp(renter.name) }).click();
     await expect(page.locator("p", { hasText: hello })).toBeVisible();
@@ -188,7 +188,7 @@ test.describe.serial("Kirayla flows", () => {
 
   test("host accepts and completes; renter reviews", async ({ page }) => {
     const errors = watchConsole(page);
-    await login(page, "rashad@kirayla.az");
+    await login(page, "rashad@share.az");
     await page.goto("/az/host");
     const row = page.getByRole("listitem").filter({ hasText: renter.name });
     await row.getByRole("button", { name: /Təsdiqlə/ }).click();
@@ -211,7 +211,7 @@ test.describe.serial("Kirayla flows", () => {
 
   test("demo admin can look but not touch", async ({ page }) => {
     const errors = watchConsole(page);
-    await login(page, "demo-admin@kirayla.az");
+    await login(page, "demo-admin@share.az");
     await page.waitForURL(/\/admin$/);
     await expect(page.getByText("Demo admin: hər şeyi görə bilərsən")).toBeVisible();
     await expect(page.getByText("Dövriyyə (GMV)")).toBeVisible();
@@ -222,7 +222,7 @@ test.describe.serial("Kirayla flows", () => {
   });
 
   test("demo admin writes are refused by the API itself, not just the UI", async ({ request }) => {
-    const auth = await (await request.post(`${API}/api/auth/login`, { data: { email: "demo-admin@kirayla.az", password: "Demo1234!" } })).json();
+    const auth = await (await request.post(`${API}/api/auth/login`, { data: { email: "demo-admin@share.az", password: "Demo1234!" } })).json();
     const headers = { Authorization: `Bearer ${auth.accessToken}` };
     expect((await request.get(`${API}/api/admin/stats`, { headers })).status()).toBe(200);
     const writes: [string, string, unknown?][] = [
@@ -244,7 +244,7 @@ test.describe.serial("Kirayla flows", () => {
     // nothing changed
     expect((await (await request.get(`${API}/api/listings/1`)).json()).status).toBe("ACTIVE");
     // a normal user cannot reach admin endpoints at all, and neither can a guest
-    const user = await (await request.post(`${API}/api/auth/login`, { data: { email: "aysel@kirayla.az", password: "Demo1234!" } })).json();
+    const user = await (await request.post(`${API}/api/auth/login`, { data: { email: "aysel@share.az", password: "Demo1234!" } })).json();
     expect((await request.get(`${API}/api/admin/stats`, { headers: { Authorization: `Bearer ${user.accessToken}` } })).status()).toBe(403);
     expect((await request.get(`${API}/api/admin/stats`)).status()).toBe(401);
   });
@@ -300,7 +300,7 @@ test.describe.serial("Kirayla flows", () => {
 
   test("real admin moderates a listing", async ({ page }) => {
     const errors = watchConsole(page);
-    await login(page, "admin@kirayla.local", "admin-dev-only");
+    await login(page, "admin@share.local", "admin-dev-only");
     await page.goto("/az/admin/reports");
     await expect(page.getByRole("heading", { name: "Şikayətlər" })).toBeVisible();
     await page.getByRole("button", { name: "Həll olundu" }).first().click();

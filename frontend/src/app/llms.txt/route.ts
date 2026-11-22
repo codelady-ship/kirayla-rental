@@ -6,9 +6,9 @@ export const dynamic = "force-static";
 /** Plain-language site summary for LLM crawlers (llmstxt.org). */
 export function GET() {
   const cats = demoCategories.map((c) => `- [${c.nameEn} / ${c.nameAz}](${SITE_URL}/en/c/${c.slug})`).join("\n");
-  const body = `# Kirayla
+  const body = `# Share
 
-> Kirayla is a peer-to-peer rental marketplace for Azerbaijan (Baku, Ganja, Sumgait). People list their own things — cameras, drills, tents, bikes, game consoles, dresses — and rent them out by the day. Renters search, pick dates, send a booking request, and the owner accepts or declines. Prices are in Azerbaijani manat (AZN) per day plus a refundable deposit.
+> Share is a peer-to-peer rental marketplace for Azerbaijan (Baku, Ganja, Sumgait). People list their own things — cameras, drills, tents, bikes, game consoles, dresses — and rent them out by the day. Renters search, pick dates, send a booking request, and the owner accepts or declines. Prices are in Azerbaijani manat (AZN) per day plus a refundable deposit.
 
 This is a portfolio project by a full-stack developer (Next.js + Java Spring Boot). Payments are not real.
 
@@ -28,7 +28,7 @@ ${cats}
 - [Sitemap](${SITE_URL}/sitemap.xml)
 
 ## Source
-- [GitHub repository](https://github.com/codelady-ship/kirayla-rental)
+- [GitHub repository](https://github.com/codelady-ship/share-rental)
 `;
   return new Response(body, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
 }

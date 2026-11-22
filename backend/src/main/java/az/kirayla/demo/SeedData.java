@@ -9,7 +9,7 @@ public final class SeedData {
 
     /** The three demo accounts whose password is printed on the login page. */
     public static final java.util.Set<String> PUBLIC_LOGINS =
-            java.util.Set.of("aysel@kirayla.az", "rashad@kirayla.az", "demo-admin@kirayla.az");
+            java.util.Set.of("aysel@share.az", "rashad@share.az", "demo-admin@share.az");
 
     private SeedData() {}
 

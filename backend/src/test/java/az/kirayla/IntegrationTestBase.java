@@ -40,7 +40,7 @@ public abstract class IntegrationTestBase {
     }
 
     protected Account register(String name) throws Exception {
-        String email = unique(name.toLowerCase().replaceAll("[^a-z0-9]", "")) + "@test.kirayla.az";
+        String email = unique(name.toLowerCase().replaceAll("[^a-z0-9]", "")) + "@test.share.az";
         JsonNode body = read(mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
                         .content(json.writeValueAsString(Map.of("name", name, "email", email,
                                 "password", "Secret123!", "city", "Bakı"))))

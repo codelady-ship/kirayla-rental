@@ -13,9 +13,9 @@ import { brand } from "../brand";
 import { Spinner } from "../ui";
 
 export const DEMO_ACCOUNTS = [
-  { key: "demoRenter", email: "aysel@kirayla.az", icon: "user" },
-  { key: "demoHost", email: "rashad@kirayla.az", icon: "chart" },
-  { key: "demoAdmin", email: "demo-admin@kirayla.az", icon: "shield" },
+  { key: "demoRenter", email: "aysel@share.az", icon: "user" },
+  { key: "demoHost", email: "rashad@share.az", icon: "chart" },
+  { key: "demoAdmin", email: "demo-admin@share.az", icon: "shield" },
 ] as const;
 export const DEMO_PASSWORD = "Demo1234!";
 

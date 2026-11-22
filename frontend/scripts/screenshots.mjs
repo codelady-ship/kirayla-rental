@@ -28,9 +28,9 @@ const pages = [
   { name: "home", url: `/${lang}` },
   { name: "category", url: `/${lang}/c/foto-video` },
   { name: "listing", url: `/${lang}/listing/1` },
-  { name: "booking", url: `/${lang}/checkout/2?from=${iso(30)}&to=${iso(32)}`, as: "aysel@kirayla.az" },
-  { name: "host", url: `/${lang}/host`, as: "rashad@kirayla.az" },
-  { name: "admin", url: `/${lang}/admin`, as: "demo-admin@kirayla.az" },
+  { name: "booking", url: `/${lang}/checkout/2?from=${iso(30)}&to=${iso(32)}`, as: "aysel@share.az" },
+  { name: "host", url: `/${lang}/host`, as: "rashad@share.az" },
+  { name: "admin", url: `/${lang}/admin`, as: "demo-admin@share.az" },
   ...(process.env.EXTRA ? JSON.parse(process.env.EXTRA) : []),
 ];
 const widths = (process.env.WIDTHS ?? "1920,1440,768,390").split(",").map(Number);

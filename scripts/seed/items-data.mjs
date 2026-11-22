@@ -1,4 +1,4 @@
-// Seed catalogue for Kirayla. Owner ids refer to the users list in gen-seed.mjs.
+// Seed catalogue for Share. Owner ids refer to the users list in gen-seed.mjs.
 export const categories = [
   [1, "foto-video", "Foto və video", "Photo & video", "camera"],
   [2, "aletler", "Alətlər", "Tools", "drill"],
@@ -83,7 +83,8 @@ export const users = [
   [22, "sevinc@kirayla.az", "Sevinc Ağayeva", "Bakı", null, "USER", false, 3],
 ];
 
-/** The only seed accounts anyone can sign in to (password Demo1234!). */
+/** The only seed accounts anyone can sign in to (password Demo1234!).
+ *  V2 keeps the original @kirayla.az addresses (its Flyway checksum must not change); migration V5 renames them to @share.az. */
 export const DEMO_LOGINS = ["aysel@kirayla.az", "rashad@kirayla.az", "demo-admin@kirayla.az"];
 
 export const reviewTexts = [

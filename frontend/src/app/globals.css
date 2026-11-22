@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Kirayla runs on three deliberate "zones", each with ONE accent:
+ * Share runs on three deliberate "zones", each with ONE accent:
  *  - discovery (home)      : canvas mist, pillow-soft 28px cards, violet #5433eb
  *  - market (browse → book): white gallery, 12px photo cards, coral used only for actions
  *  - dashboard (host/admin): onyx canvas, graphite cards, cobalt #5266eb

@@ -9,7 +9,7 @@ import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServic
 @org.springframework.scheduling.annotation.EnableScheduling
 public class KiraylaApplication {
     /**
-     * Kirayla is a Baku marketplace: "today" for bookings and every timestamp the API returns are
+     * Share is a Baku marketplace: "today" for bookings and every timestamp the API returns are
      * Baku wall-clock time, whatever zone the host runs in (Render containers run in UTC).
      */
     public static final String ZONE = "Asia/Baku";

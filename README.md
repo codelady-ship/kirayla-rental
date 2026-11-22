@@ -1,6 +1,6 @@
-# Kirayla
+# Share
 
-Kirayla is a peer-to-peer rental marketplace for Azerbaijan. Anyone can list one of their own things (a camera, a drill, a tent, a bike, a console, a dress) and rent it out by the day. Renters search, pick dates and send a booking request; the owner accepts or declines.
+Share is a peer-to-peer rental marketplace for Azerbaijan. Anyone can list one of their own things (a camera, a drill, a tent, a bike, a console, a dress) and rent it out by the day. Renters search, pick dates and send a booking request; the owner accepts or declines.
 
 **Stack:** Next.js 16 (App Router, TypeScript, Tailwind CSS v4, next-intl az/en) on the front, Java 21 + Spring Boot 3.5 (Spring Security JWT, Data JPA, Flyway, PostgreSQL / H2) on the back.
 
@@ -53,9 +53,9 @@ The three demo accounts below share the password **`Demo1234!`**; no other seed 
 
 | Role | Email | What to try |
 |---|---|---|
-| Renter | `aysel@kirayla.az` | Book something, see *My rentals*, review the completed studio-lights rental, message a host |
-| Host | `rashad@kirayla.az` | Host dashboard: earnings chart, two pending requests to accept/decline, create a listing of your own with photos and edit it, block days |
-| Admin (read-only) | `demo-admin@kirayla.az` | Every admin screen is visible, but **every write is blocked**: the API answers `403 DEMO_READ_ONLY` and the UI shows a friendly toast |
+| Renter | `aysel@share.az` | Book something, see *My rentals*, review the completed studio-lights rental, message a host |
+| Host | `rashad@share.az` | Host dashboard: earnings chart, two pending requests to accept/decline, create a listing of your own with photos and edit it, block days |
+| Admin (read-only) | `demo-admin@share.az` | Every admin screen is visible, but **every write is blocked**: the API answers `403 DEMO_READ_ONLY` and the UI shows a friendly toast |
 
 ### How the public demo protects itself
 
@@ -70,7 +70,7 @@ Three accounts are public logins, so everything they can do or read is public. N
 
 Sign-in is rate-limited (8 failed attempts per address and e-mail, 40 per address, in 10 minutes → `429`; the three public demo accounts are exempt from the per-e-mail lock, since their password is public, but not from the per-address one), refresh tokens rotate on every use and `POST /api/auth/logout` revokes them.
 
-A real admin is created at startup from `ADMIN_EMAIL` / `ADMIN_PASSWORD` (dev default: `admin@kirayla.local` / `admin-dev-only`; never used in production).
+A real admin is created at startup from `ADMIN_EMAIL` / `ADMIN_PASSWORD` (dev default: `admin@share.local` / `admin-dev-only`; never used in production).
 
 ## Run locally
 
@@ -139,7 +139,7 @@ Do the steps in this order: the web app needs the API's URL, and the API needs t
 
 **1. Web → Vercel (browse-only at first)**
 
-1. Import `codelady-ship/kirayla-rental` and set **Root Directory = `frontend`** (framework preset: Next.js, default build and install commands).
+1. Import `codelady-ship/share-rental` and set **Root Directory = `frontend`** (framework preset: Next.js, default build and install commands).
 2. Set one variable for now: `NEXT_PUBLIC_SITE_URL=https://<the domain Vercel gives the project>` (no trailing slash). Do **not** set `NEXT_PUBLIC_API_URL` yet.
 3. Deploy and note the production domain; it is the CORS origin in step 3.
 
@@ -182,4 +182,4 @@ The seed (`backend/src/main/resources/db/migration/V2__seed_demo_data.sql`) and 
 
 All photos come from **Wikimedia Commons** under CC0, public domain, CC BY or CC BY-SA. Each photo is hot-linked and credited to its author, with licence and source link, on the listing page (*Photo credits*).
 
-Kirayla is a portfolio project. Payments are not real.
+Share is a portfolio project. Payments are not real.

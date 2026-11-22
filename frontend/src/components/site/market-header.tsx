@@ -23,7 +23,7 @@ export function MarketHeader({ initialQuery = "" }: { initialQuery?: string }) {
     <header className="sticky top-0 z-40 border-b border-hair bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <DemoBanner />
       <div className="mx-auto flex h-[72px] max-w-[1440px] items-center gap-3 px-4 sm:h-20 sm:gap-6 sm:px-6 lg:px-10">
-        <Link href="/" className="flex min-h-11 shrink-0 items-center text-hof" aria-label="Kirayla">
+        <Link href="/" className="flex min-h-11 shrink-0 items-center text-hof" aria-label="Share">
           <Wordmark zone="market" size={24} />
         </Link>
 

@@ -1,4 +1,4 @@
-# Render Blueprint for the Kirayla Spring Boot API (backend/).
+# Render Blueprint for the Share Spring Boot API (backend/).
 # Free web service in Frankfurt. The database is NOT created here: it is an external Neon Postgres
 # whose connection string is entered in the Render dashboard (never committed to git).
 services:

@@ -24,9 +24,9 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const name = catName(c, locale);
   const description =
     locale === "en"
-      ? `${name} for rent by the day in Baku, Ganja and Sumgait — ${c.listingCount}+ listings from local hosts on Kirayla.`
-      : `${name} günlük kirayə — Bakı, Gəncə və Sumqayıtda ${c.listingCount}+ elan. Kiraylada yerli ev sahiblərindən kirayə götür.`;
-  return { title: name, description, alternates: alternates(locale, `/c/${slug}`), openGraph: { title: `${name} · Kirayla`, description } };
+      ? `${name} for rent by the day in Baku, Ganja and Sumgait — ${c.listingCount}+ listings from local hosts on Share.`
+      : `${name} günlük kirayə — Bakı, Gəncə və Sumqayıtda ${c.listingCount}+ elan. Share-də yerli ev sahiblərindən kirayə götür.`;
+  return { title: name, description, alternates: alternates(locale, `/c/${slug}`), openGraph: { title: `${name} · Share`, description } };
 }
 
 export default async function CategoryPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {

@@ -70,13 +70,13 @@ jobs:
           test "$(curl -sf http://localhost:8080/api/categories | jq length)" = "10"
           test "$(curl -sf 'http://localhost:8080/api/listings?city=Bak%C4%B1&maxPrice=20&sort=price_asc' | jq '.content | length > 0')" = "true"
           TOKEN=$(curl -sf -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' \
-            -d '{"email":"demo-admin@kirayla.az","password":"Demo1234!"}' | jq -r .accessToken)
+            -d '{"email":"demo-admin@share.az","password":"Demo1234!"}' | jq -r .accessToken)
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/api/admin/stats -H "Authorization: Bearer $TOKEN")" = "200"
           test "$(curl -s -o /dev/null -w '%{http_code}' -X PATCH http://localhost:8080/api/admin/listings/1 \
             -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d '{"status":"HIDDEN"}')" = "403"
           # a new account can book: identity columns continue after the seeded ids
           USER=$(curl -sf -X POST http://localhost:8080/api/auth/register -H 'Content-Type: application/json' \
-            -d '{"name":"CI Renter","email":"ci-renter@kirayla.test","password":"Sinaq12345","city":"Bakı"}' | jq -r .accessToken)
+            -d '{"name":"CI Renter","email":"ci-renter@share.test","password":"Sinaq12345","city":"Bakı"}' | jq -r .accessToken)
           FROM=$(date -d '+200 days' +%F); TO=$(date -d '+201 days' +%F)
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/bookings -H "Authorization: Bearer $USER" \
             -H 'Content-Type: application/json' -d "{\"listingId\":5,\"startDate\":\"$FROM\",\"endDate\":\"$TO\"}")" = "201"
@@ -88,13 +88,13 @@ jobs:
           # the public demo protects itself: other seed users cannot sign in, the demo admin sees masked e-mails only,
           # the demo host cannot archive seeded listings, refresh tokens are single-use
           test "$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' \
-            -d '{"email":"leyla@kirayla.az","password":"Demo1234!"}')" = "401"
+            -d '{"email":"leyla@share.az","password":"Demo1234!"}')" = "401"
           USERS=$(curl -sf 'http://localhost:8080/api/admin/users?size=100' -H "Authorization: Bearer $TOKEN")
-          test "$(echo "$USERS" | grep -c 'ci-renter@kirayla.test' || true)" = "0"
-          echo "$USERS" | grep -q 'c\*\*\*@kirayla.test'
+          test "$(echo "$USERS" | grep -c 'ci-renter@share.test' || true)" = "0"
+          echo "$USERS" | grep -q 'c\*\*\*@share.test'
           test "$(curl -sf 'http://localhost:8080/api/admin/users?q=ci-renter' -H "Authorization: Bearer $TOKEN" | jq .totalElements)" = "0"
           HOST=$(curl -sf -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' \
-            -d '{"email":"rashad@kirayla.az","password":"Demo1234!"}')
+            -d '{"email":"rashad@share.az","password":"Demo1234!"}')
           test "$(curl -s -o /dev/null -w '%{http_code}' -X DELETE http://localhost:8080/api/listings/1 \
             -H "Authorization: Bearer $(echo "$HOST" | jq -r .accessToken)")" = "403"
           REFRESH=$(echo "$HOST" | jq -r .refreshToken)

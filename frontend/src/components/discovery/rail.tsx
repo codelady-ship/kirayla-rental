@@ -25,9 +25,9 @@ export function DiscoveryRail() {
   return (
     <>
       <aside className="sticky top-0 hidden h-dvh w-16 shrink-0 flex-col items-center border-r border-hair bg-white py-4 lg:flex" aria-label={t("menu")}>
-        <Link href="/" aria-label="Kirayla" className="mb-6 flex size-12 items-center justify-center">
+        <Link href="/" aria-label="Share" className="mb-6 flex size-12 items-center justify-center">
           <span aria-hidden="true" className="relative flex size-9 items-center justify-center rounded-[12px] bg-black text-[17px] font-semibold text-white" translate="no">
-            k<span className="absolute bottom-1.5 right-1.5 size-1.5 rounded-full bg-violet" />
+            s<span className="absolute bottom-1.5 right-1.5 size-1.5 rounded-full bg-violet" />
           </span>
         </Link>
         <nav className="flex flex-1 flex-col items-center gap-1">
@@ -62,7 +62,7 @@ export function DiscoveryRail() {
       </aside>
 
       <div className="flex h-16 items-center justify-between px-4 lg:hidden">
-        <Link href="/" className="flex min-h-11 items-center" aria-label="Kirayla">
+        <Link href="/" className="flex min-h-11 items-center" aria-label="Share">
           <Wordmark size={22} />
         </Link>
         <div className="flex items-center gap-1">

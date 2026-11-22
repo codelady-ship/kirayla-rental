@@ -32,7 +32,7 @@ export function Wordmark({ zone = "discovery", className = "", size }: { zone?: 
   const dot = zone === "discovery" ? "bg-violet" : zone === "market" ? "bg-coral" : "bg-cobalt";
   return (
     <span className={`inline-flex items-baseline font-semibold ${className}`} style={{ fontSize: size, letterSpacing: "-0.055em" }} translate="no">
-      kirayla
+      share
       <span aria-hidden="true" className={`ml-[0.08em] inline-block size-[0.24em] rounded-full ${dot}`} />
     </span>
   );
