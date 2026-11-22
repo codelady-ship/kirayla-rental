@@ -7,17 +7,20 @@ import { Footer } from "@/components/site/footer";
 import { Link } from "@/i18n/navigation";
 import { serverGet } from "@/lib/api";
 import { demoCategories, demoSearch } from "@/lib/demo";
+import { HERO_CARDS, heroCards } from "@/lib/hero";
 import type { Category, ListingCard, Page } from "@/lib/types";
 
 export const revalidate = 300;
 
 async function loadHome() {
-  const [cats, top, fresh] = await Promise.all([
+  const [cats, top, fresh, highlights] = await Promise.all([
     serverGet<Category[]>("/api/categories"),
     serverGet<Page<ListingCard>>("/api/listings?sort=rating&size=48"),
     serverGet<Page<ListingCard>>("/api/listings?sort=newest&size=8"),
+    serverGet<ListingCard[]>(`/api/listings/highlights?size=${HERO_CARDS}`),
   ]);
   return {
+    highlights: highlights.data?.length ? highlights.data : null,
     categories: cats.data ?? demoCategories,
     top: top.data?.content ?? demoSearch({ sort: "rating", size: 48 }).content,
     fresh: fresh.data?.content ?? demoSearch({ sort: "newest", size: 8 }).content,
@@ -29,15 +32,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   setRequestLocale(locale);
   const t = await getTranslations("Home");
   const tn = await getTranslations("Nav");
-  const { categories, top, fresh } = await loadHome();
+  const { categories, top, fresh, highlights } = await loadHome();
 
-  // constellation: one standout listing from as many categories as possible
-  const featured: ListingCard[] = [];
-  const byReviews = [...top].sort((a, b) => b.reviewCount - a.reviewCount || b.ratingAvg - a.ratingAvg || a.id - b.id);
-  for (const c of categories) {
-    const best = byReviews.find((l) => l.category.id === c.id && l.coverUrl);
-    if (best) featured.push(best);
-  }
+  // constellation: the most rented and the newest listings, alternating (API: /api/listings/highlights);
+  // without the API, as before: one standout listing per category from the bundled snapshot
+  const featured = heroCards(highlights, top, categories);
   // bands: the four categories with the most listings, best-rated first
   const bandCats = [...categories].filter((c) => c.listingCount >= 3).sort((a, b) => b.listingCount - a.listingCount || a.sortOrder - b.sortOrder).slice(0, 4);
   const cities = ["Bakı", "Gəncə", "Sumqayıt"].map((city) => ({ city, count: top.filter((l) => l.city === city).length }));
